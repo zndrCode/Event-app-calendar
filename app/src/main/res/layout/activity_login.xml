@@ -8,7 +8,14 @@
     android:padding="24dp"
     android:background="#FFFFFF">
 
-    <!-- Title -->
+    <ImageView
+        android:id="@+id/imageLogo"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:src="@drawable/login_logo"
+        android:contentDescription="@string/app_name"
+        android:layout_marginBottom="24dp"/>
+
     <TextView
         android:id="@+id/textTitle"
         android:layout_width="wrap_content"
@@ -18,7 +25,7 @@
         android:textStyle="bold"
         android:textColor="#000000"
         android:layout_marginBottom="4dp"/>
-
+ 
     <TextView
         android:id="@+id/textSubtitle"
         android:layout_width="wrap_content"
@@ -29,7 +36,6 @@
         android:textColor="#2196F3"
         android:layout_marginBottom="32dp"/>
 
-    <!-- Username Field -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="50dp"
@@ -90,7 +96,6 @@
             android:src="@android:drawable/ic_menu_view"/>
     </LinearLayout>
 
-    <!-- Login Button -->
     <Button
         android:id="@+id/buttonLogin"
         android:layout_width="match_parent"
@@ -102,12 +107,11 @@
         android:background="@drawable/btn_gradient"
         android:layout_marginBottom="12dp"/>
 
-    <!-- Forgot Password -->
     <TextView
-        android:id="@+id/textForgotPassword"
+        android:id="@+id/textCreate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="forgot password?"
+        android:text="create an account?"
         android:textSize="14sp"
         android:textColor="#2196F3"/>
 </LinearLayout>
