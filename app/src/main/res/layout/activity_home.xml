@@ -5,7 +5,6 @@
     android:layout_height="match_parent"
     android:background="#FFFFFF">
 
-    <!-- 🔝 Top Bar -->
     <TextView
         android:id="@+id/textTitle"
         android:layout_width="match_parent"
@@ -19,7 +18,6 @@
         android:background="#FFFFFF"
         android:elevation="2dp"/>
 
-    <!-- 🧭 Main Content Area -->
     <FrameLayout
         android:id="@+id/homeContent"
         android:layout_width="match_parent"
@@ -28,7 +26,6 @@
         android:layout_above="@id/bottomNav"
         android:background="#FFFFFF">
 
-        <!-- 📄 Empty state text -->
         <TextView
             android:id="@+id/textEmptyState"
             android:layout_width="wrap_content"
@@ -40,7 +37,6 @@
             android:gravity="center"/>
     </FrameLayout>
 
-    <!-- ➕ Floating Add Button -->
     <ImageButton
         android:id="@+id/fabAdd"
         android:layout_width="50dp"
@@ -78,7 +74,7 @@
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@drawable/home_logo"
+                android:src="@drawable/bookmark_logo"
                 android:tint="#9E9E9E"/>
         </LinearLayout>
 
@@ -93,7 +89,7 @@
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@drawable/bookmark_logo"
+                android:src="@drawable/home_logo"
                 android:tint="#2196F3"/>
         </LinearLayout>
 
