@@ -113,7 +113,7 @@
             android:id="@+id/textGoToLogin"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Already have an account? Login"
+            android:text="Already have an account?"
             android:textSize="14sp"
             android:textColor="#2196F3"
             android:layout_marginTop="8dp" />

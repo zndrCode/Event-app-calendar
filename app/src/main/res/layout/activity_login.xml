@@ -62,10 +62,6 @@
             android:inputType="textPersonName"
             android:textSize="16sp"/>
 
-        <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@android:drawable/ic_menu_myplaces"/>
     </LinearLayout>
 
     <!-- Password Field -->
@@ -88,13 +84,16 @@
             android:hint="password"
             android:background="@null"
             android:inputType="textPassword"
-            android:textSize="16sp"/>
+            android:textSize="16sp" />
 
         <ImageView
+            android:id="@+id/imageTogglePassword"
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:src="@android:drawable/ic_menu_view"/>
-    </LinearLayout>
+            android:src="@android:drawable/ic_menu_view"
+            android:contentDescription="Toggle Password Visibility"
+            android:padding="4dp" />
+</LinearLayout>
 
     <Button
         android:id="@+id/buttonLogin"
@@ -111,7 +110,7 @@
         android:id="@+id/textCreate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="create an account?"
+        android:text="Create an Account?"
         android:textSize="14sp"
         android:textColor="#2196F3"/>
 </LinearLayout>
