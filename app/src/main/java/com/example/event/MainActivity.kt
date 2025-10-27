@@ -1,5 +1,6 @@
 package com.example.event
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
@@ -20,7 +21,6 @@ class MainActivity : ComponentActivity() {
         val tvCreate = findViewById<TextView>(R.id.textCreate)
         val imgToggle = findViewById<ImageView>(R.id.imageTogglePassword)
 
-        // 👁️ Toggle password visibility
         imgToggle.setOnClickListener {
             isPasswordVisible = !isPasswordVisible
             if (isPasswordVisible) {
@@ -33,30 +33,29 @@ class MainActivity : ComponentActivity() {
             etPassword.setSelection(etPassword.text.length)
         }
 
-        // 🔐 Login button
         btnLogin.setOnClickListener {
             val username = etUsername.text.toString().trim()
             val password = etPassword.text.toString().trim()
 
-            when {
-                username.isEmpty() || password.isEmpty() -> {
-                    Toast.makeText(this, "Please enter username and password", Toast.LENGTH_SHORT).show()
-                }
-                username == "admin" && password == "1234" -> {
-                    Toast.makeText(this, "Login successful 🎉", Toast.LENGTH_SHORT).show()
+            val sharedPref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
+            val savedUsername = sharedPref.getString("username", null)
+            val savedPassword = sharedPref.getString("password", null)
 
-                    // ✅ Go to HomeActivity after successful login
-                    val intent = Intent(this, HomeActivity::class.java)
-                    startActivity(intent)
-                    finish() // prevents going back to login screen
+            when {
+                username.isEmpty() || password.isEmpty() ->
+                    Toast.makeText(this, "Please enter username and password", Toast.LENGTH_SHORT).show()
+
+                username == savedUsername && password == savedPassword -> {
+                    Toast.makeText(this, "Login successful 🎉", Toast.LENGTH_SHORT).show()
+                    startActivity(Intent(this, HomeActivity::class.java))
+                    finish()
                 }
-                else -> {
+
+                else ->
                     Toast.makeText(this, "Invalid credentials ❌", Toast.LENGTH_SHORT).show()
-                }
             }
         }
 
-        // ➕ Create Account
         tvCreate.setOnClickListener {
             startActivity(Intent(this, SignUpActivity::class.java))
         }

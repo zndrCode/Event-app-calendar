@@ -5,6 +5,7 @@
     android:layout_height="match_parent"
     android:background="#FFFFFF">
 
+    <!-- 🔝 App Title -->
     <TextView
         android:id="@+id/textTitle"
         android:layout_width="match_parent"
@@ -18,33 +19,41 @@
         android:background="#FFFFFF"
         android:elevation="2dp"/>
 
-    <FrameLayout
-        android:id="@+id/homeContent"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+    <!-- 📋 Container for Events -->
+    <ScrollView
         android:layout_below="@id/textTitle"
         android:layout_above="@id/bottomNav"
-        android:background="#FFFFFF">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp">
 
-        <TextView
-            android:id="@+id/textEmptyState"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/eventContainer"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="No Events Yet. Press the + to add one"
-            android:textColor="#9E9E9E"
-            android:textSize="16sp"
-            android:layout_gravity="center"
-            android:gravity="center"/>
-    </FrameLayout>
+            android:orientation="vertical"
+            android:gravity="center_horizontal"/>
+    </ScrollView>
 
+    <!-- 🪶 Empty Text -->
+    <TextView
+        android:id="@+id/textEmpty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No events yet. Press the + to add one."
+        android:textSize="16sp"
+        android:textColor="@android:color/darker_gray"
+        android:layout_centerInParent="true"/>
+
+    <!-- ➕ Add Button -->
     <ImageButton
         android:id="@+id/fabAdd"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="24dp"
         android:layout_marginBottom="80dp"
-        android:layout_alignParentBottom="true"
         android:background="@drawable/btn_circle"
         android:src="@drawable/plus_outline"
         android:contentDescription="Add Event"
@@ -75,7 +84,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/bookmark_logo"
-                android:tint="#9E9E9E"/>
+                android:tint="#2196F3"/>
         </LinearLayout>
 
         <LinearLayout
@@ -90,7 +99,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/home_logo"
-                android:tint="#2196F3"/>
+                android:tint="#9E9E9E"/>
         </LinearLayout>
 
         <LinearLayout

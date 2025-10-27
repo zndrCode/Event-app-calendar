@@ -1,5 +1,6 @@
 package com.example.event
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.*
@@ -19,7 +20,7 @@ class SignUpActivity : ComponentActivity() {
         val btnSignUp = findViewById<Button>(R.id.buttonSignUp)
         val tvGoToLogin = findViewById<TextView>(R.id.textGoToLogin)
 
-        // sa Sign Up button
+        // ✅ Handle Sign Up
         btnSignUp.setOnClickListener {
             val fullName = etFullName.text.toString().trim()
             val email = etEmail.text.toString().trim()
@@ -35,17 +36,25 @@ class SignUpActivity : ComponentActivity() {
                     Toast.makeText(this, "Passwords do not match ❌", Toast.LENGTH_SHORT).show()
                 }
                 else -> {
-                    Toast.makeText(this, "Account created successfully 🎉", Toast.LENGTH_SHORT).show()
-                    // TODO: Save account to database or backend
+                    // ✅ Save account details locally using SharedPreferences
+                    val sharedPref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
+                    val editor = sharedPref.edit()
+                    editor.putString("fullname", fullName)
+                    editor.putString("email", email)
+                    editor.putString("username", username)
+                    editor.putString("password", password)
+                    editor.apply()
 
-                    // pag human ug signup, ma balik ka sa login screen
+                    Toast.makeText(this, "Account created successfully 🎉", Toast.LENGTH_SHORT).show()
+
+                    // Go back to login screen
                     startActivity(Intent(this, MainActivity::class.java))
                     finish()
                 }
             }
         }
 
-        // para sa "Already have an account? Login"
+        // 🔄 Go to Login if already have an account
         tvGoToLogin.setOnClickListener {
             startActivity(Intent(this, MainActivity::class.java))
             finish()

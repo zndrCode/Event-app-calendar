@@ -1,93 +1,115 @@
 package com.example.event
 
-import android.view.*
-import android.widget.*
+import android.app.AlertDialog
 import android.os.Bundle
+import android.widget.*
 import androidx.activity.ComponentActivity
-import androidx.core.content.ContextCompat
-import androidx.core.view.setPadding
+import androidx.core.view.isVisible
 
 class HomeActivity : ComponentActivity() {
 
-    private lateinit var homeContent: FrameLayout
-    private lateinit var textEmptyState: TextView
-    private var popupWindow: PopupWindow? = null
+    private lateinit var eventContainer: LinearLayout
+    private lateinit var emptyText: TextView
+    private val eventList = mutableListOf<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
 
+        eventContainer = findViewById(R.id.eventContainer)
+        emptyText = findViewById(R.id.textEmpty)
         val fabAdd = findViewById<ImageButton>(R.id.fabAdd)
-        val navHome = findViewById<LinearLayout>(R.id.navHome)
-        val navBookmarks = findViewById<LinearLayout>(R.id.navBookmarks)
-        val navProfile = findViewById<LinearLayout>(R.id.navProfile)
-        homeContent = findViewById(R.id.homeContent)
-        textEmptyState = findViewById(R.id.textEmptyState)
+
+        updateEmptyState()
 
         fabAdd.setOnClickListener {
-            showAddEventPopup(it)
-        }
-
-        navHome.setOnClickListener {
-            Toast.makeText(this, "Home", Toast.LENGTH_SHORT).show()
-        }
-        navBookmarks.setOnClickListener {
-            Toast.makeText(this, "Bookmarks", Toast.LENGTH_SHORT).show()
-        }
-        navProfile.setOnClickListener {
-            Toast.makeText(this, "Profile", Toast.LENGTH_SHORT).show()
+            showAddEventDialog()
         }
     }
 
-    private fun showAddEventPopup(anchorView: View) {
-        val popupView = layoutInflater.inflate(R.layout.popup_add_event, null)
-        val etEventName = popupView.findViewById<EditText>(R.id.etEventName)
-        val btnAddEvent = popupView.findViewById<Button>(R.id.btnAddEvent)
+    // 🪶 Show add-event dialog
+    private fun showAddEventDialog() {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Add Event")
 
-        popupWindow = PopupWindow(
-            popupView,
-            WindowManager.LayoutParams.MATCH_PARENT,
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            true
-        )
-        popupWindow?.elevation = 10f
-        popupWindow?.isOutsideTouchable = true
-        popupWindow?.showAtLocation(anchorView, Gravity.CENTER, 0, 0)
+        val input = EditText(this)
+        input.hint = "Event subject name"
+        builder.setView(input)
 
-        btnAddEvent.setOnClickListener {
-            val eventName = etEventName.text.toString().trim()
+        builder.setPositiveButton("Add") { _, _ ->
+            val eventName = input.text.toString().trim()
             if (eventName.isNotEmpty()) {
+                eventList.add(eventName)
                 addEventCard(eventName)
-                popupWindow?.dismiss()
+                updateEmptyState()
             } else {
                 Toast.makeText(this, "Please enter an event name", Toast.LENGTH_SHORT).show()
             }
         }
+
+        builder.setNegativeButton("Cancel", null)
+        builder.show()
     }
 
+    // 🧱 Add event card to the container
     private fun addEventCard(eventName: String) {
-        textEmptyState.visibility = TextView.GONE
+        val card = LinearLayout(this)
+        card.orientation = LinearLayout.HORIZONTAL
+        card.setPadding(16, 16, 16, 16)
+        card.setBackgroundResource(android.R.drawable.dialog_holo_light_frame)
+        card.setPadding(24, 16, 24, 16)
+        card.setBackgroundColor(0xFFFFFFFF.toInt())
 
-        val eventCard = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(32)
-            background = ContextCompat.getDrawable(this@HomeActivity, R.drawable.event_card_bg)
-            val params = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT
-            )
-            params.setMargins(32, 32, 32, 0)
-            layoutParams = params
+        val txtEvent = TextView(this)
+        txtEvent.text = eventName
+        txtEvent.textSize = 18f
+        txtEvent.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+
+        val btnEdit = ImageButton(this)
+        btnEdit.setImageResource(R.drawable.dots_edit)
+        btnEdit.setBackgroundColor(0)
+        btnEdit.setOnClickListener { showEditEventDialog(eventName, txtEvent) }
+
+        val btnDelete = ImageButton(this)
+        btnDelete.setImageResource(R.drawable.trash_event)
+        btnDelete.setBackgroundColor(0)
+        btnDelete.setOnClickListener {
+            eventContainer.removeView(card)
+            eventList.remove(eventName)
+            updateEmptyState()
         }
 
-        val title = TextView(this).apply {
-            text = eventName
-            textSize = 18f
-            setTextColor(ContextCompat.getColor(this@HomeActivity, android.R.color.black))
-            setPadding(8)
+        card.addView(txtEvent)
+        card.addView(btnEdit)
+        card.addView(btnDelete)
+        eventContainer.addView(card)
+    }
+
+    // ✏️ Edit event name
+    private fun showEditEventDialog(oldName: String, textView: TextView) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Edit Event")
+
+        val input = EditText(this)
+        input.setText(oldName)
+        builder.setView(input)
+
+        builder.setPositiveButton("Save") { _, _ ->
+            val newName = input.text.toString().trim()
+            if (newName.isNotEmpty()) {
+                val index = eventList.indexOf(oldName)
+                if (index != -1) eventList[index] = newName
+                textView.text = newName
+                Toast.makeText(this, "Event renamed", Toast.LENGTH_SHORT).show()
+            }
         }
 
-        eventCard.addView(title)
-        homeContent.addView(eventCard)
+        builder.setNegativeButton("Cancel", null)
+        builder.show()
+    }
+
+    // ⚙️ Show or hide empty text
+    private fun updateEmptyState() {
+        emptyText.isVisible = eventList.isEmpty()
     }
 }
