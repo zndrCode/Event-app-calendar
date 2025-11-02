@@ -5,9 +5,9 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
 import android.widget.*
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     private var isPasswordVisible = false
 

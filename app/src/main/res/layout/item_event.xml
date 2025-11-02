@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    android:foreground="?attr/selectableItemBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <!-- Title + Action buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tvEventTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Event Title"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#212121" />
+
+            <ImageButton
+                android:id="@+id/btnEdit"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@drawable/edit_event"
+                android:background="@android:color/transparent"
+                android:contentDescription="Edit"
+                android:padding="6dp" />
+
+            <ImageButton
+                android:id="@+id/btnDelete"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@drawable/trash_event"
+                android:background="@android:color/transparent"
+                android:contentDescription="Delete"
+                android:padding="6dp" />
+        </LinearLayout>
+
+        <!-- Date and Time -->
+        <TextView
+            android:id="@+id/tvEventDateTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="02 Nov 2025, 9:00 AM"
+            android:textSize="13sp"
+            android:textColor="#757575"
+            android:layout_marginTop="6dp" />
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

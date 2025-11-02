@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FFFFFF">
 
-    <!-- 🔝 App Title -->
+    <!-- Top bar -->
     <TextView
-        android:id="@+id/textTitle"
+        android:id="@+id/topTitle"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:gravity="center_vertical"
@@ -17,55 +18,80 @@
         android:textStyle="bold"
         android:textColor="#000000"
         android:background="#FFFFFF"
-        android:elevation="2dp"/>
+        android:elevation="2dp" />
 
-    <!-- 📋 Container for Events -->
-    <ScrollView
-        android:layout_below="@id/textTitle"
-        android:layout_above="@id/bottomNav"
+    <!-- Calendar -->
+    <CalendarView
+        android:id="@+id/calendarView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="16dp">
+        android:layout_height="wrap_content"
+        android:layout_below="@id/topTitle"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp" />
 
-        <LinearLayout
-            android:id="@+id/eventContainer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center_horizontal"/>
-    </ScrollView>
-
-    <!-- 🪶 Empty Text -->
+    <!-- Section label -->
     <TextView
-        android:id="@+id/textEmpty"
+        android:id="@+id/labelEvents"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="No events yet. Press the + to add one."
+        android:text="Events"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:layout_below="@id/calendarView"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:textColor="#333333" />
+
+    <!-- Empty state text -->
+    <TextView
+        android:id="@+id/textEmpty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No events yet. Press + to add one."
+        android:textAlignment="center"
         android:textSize="16sp"
-        android:textColor="@android:color/darker_gray"
-        android:layout_centerInParent="true"/>
+        android:textColor="#9E9E9E"
+        android:layout_below="@id/labelEvents"
+        android:layout_marginTop="16dp"
+        android:visibility="gone" />
 
-    <!-- ➕ Add Button -->
-    <ImageButton
+    <!-- RecyclerView -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvEvents"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_below="@id/labelEvents"
+        android:layout_above="@id/bottomNav"
+        android:layout_marginTop="8dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp" />
+
+    <!-- Floating Add Button -->
+    <LinearLayout
         android:id="@+id/fabAdd"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:layout_alignParentBottom="true"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
         android:layout_alignParentEnd="true"
-        android:layout_marginEnd="24dp"
-        android:layout_marginBottom="80dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="92dp"
+        android:gravity="center"
         android:background="@drawable/btn_circle"
-        android:src="@drawable/plus_outline"
-        android:contentDescription="Add Event"
-        android:scaleType="centerInside"
-        android:padding="10dp"
-        android:backgroundTint="@null" />
+        android:elevation="4dp"
+        android:orientation="vertical">
 
-    <!-- ⬇️ Bottom Navigation -->
+        <ImageView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/plus_outline"
+            android:contentDescription="Add Event" />
+    </LinearLayout>
+
+    <!-- Bottom Navigation -->
     <LinearLayout
         android:id="@+id/bottomNav"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="64dp"
         android:layout_alignParentBottom="true"
         android:orientation="horizontal"
         android:background="#FFFFFF"
@@ -73,48 +99,31 @@
         android:gravity="center">
 
         <LinearLayout
-            android:id="@+id/navBookmarks"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical">
-
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/bookmark_logo"
-                android:tint="#2196F3"/>
-        </LinearLayout>
-
-        <LinearLayout
             android:id="@+id/navHome"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical">
+            android:gravity="center">
 
             <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
                 android:src="@drawable/home_logo"
-                android:tint="#9E9E9E"/>
+                app:tint="#2196F3"/>
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/navProfile"
+            android:id="@+id/navSettings"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical">
+            android:gravity="center">
 
             <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
                 android:src="@drawable/profile_setting_logo"
-                android:tint="#9E9E9E"/>
+                app:tint="#9E9E9E" />
         </LinearLayout>
     </LinearLayout>
 

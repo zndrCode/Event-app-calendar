@@ -1,115 +1,225 @@
 package com.example.event
 
 import android.app.AlertDialog
+import android.content.Context
 import android.os.Bundle
 import android.widget.*
-import androidx.activity.ComponentActivity
-import androidx.core.view.isVisible
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import java.text.SimpleDateFormat
+import java.util.*
 
-class HomeActivity : ComponentActivity() {
+class HomeActivity : AppCompatActivity() {
 
-    private lateinit var eventContainer: LinearLayout
-    private lateinit var emptyText: TextView
-    private val eventList = mutableListOf<String>()
+    private lateinit var calendarView: CalendarView
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var fabAdd: LinearLayout
+    private lateinit var navHome: LinearLayout
+    private lateinit var navSettings: LinearLayout
+
+    private lateinit var eventAdapter: EventAdapter
+    private val events = mutableListOf<Event>()
+    private var selectedDateMillis: Long = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
 
-        eventContainer = findViewById(R.id.eventContainer)
-        emptyText = findViewById(R.id.textEmpty)
-        val fabAdd = findViewById<ImageButton>(R.id.fabAdd)
+        // Initialize views
+        calendarView = findViewById(R.id.calendarView)
+        recyclerView = findViewById(R.id.rvEvents)
+        fabAdd = findViewById(R.id.fabAdd)
+        navHome = findViewById(R.id.navHome)
+        navSettings = findViewById(R.id.navSettings)
 
-        updateEmptyState()
+        // RecyclerView setup
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        eventAdapter = EventAdapter(
+            events,
+            onEditClick = { event -> editEvent(event) },
+            onDeleteClick = { event -> deleteEvent(event) }
+        )
+        recyclerView.adapter = eventAdapter
 
+        // Load saved events
+        loadEvents()
+
+        // Default date
+        selectedDateMillis = calendarView.date
+        filterEventsByDate()
+
+        // When user selects a date
+        calendarView.setOnDateChangeListener { _, year, month, dayOfMonth ->
+            val cal = Calendar.getInstance()
+            cal.set(year, month, dayOfMonth)
+            selectedDateMillis = cal.timeInMillis
+            filterEventsByDate()
+        }
+
+        // Add button popup
         fabAdd.setOnClickListener {
             showAddEventDialog()
         }
+
+        // Bottom navigation
+        navHome.setOnClickListener {
+            Toast.makeText(this, "Already on Home", Toast.LENGTH_SHORT).show()
+        }
+
+        navSettings.setOnClickListener {
+            Toast.makeText(this, "Settings clicked", Toast.LENGTH_SHORT).show()
+        }
     }
 
-    // 🪶 Show add-event dialog
+    // --- Show popup dialog to add event ---
     private fun showAddEventDialog() {
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("Add Event")
+        val dialogView = layoutInflater.inflate(R.layout.popup_add_event, null)
+        val etEventName = dialogView.findViewById<EditText>(R.id.etEventName)
+        val timePicker = dialogView.findViewById<TimePicker>(R.id.timePicker)
+        val btnAddEvent = dialogView.findViewById<Button>(R.id.btnAddEvent)
 
-        val input = EditText(this)
-        input.hint = "Event subject name"
-        builder.setView(input)
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .create()
 
-        builder.setPositiveButton("Add") { _, _ ->
-            val eventName = input.text.toString().trim()
-            if (eventName.isNotEmpty()) {
-                eventList.add(eventName)
-                addEventCard(eventName)
-                updateEmptyState()
-            } else {
-                Toast.makeText(this, "Please enter an event name", Toast.LENGTH_SHORT).show()
+        btnAddEvent.setOnClickListener {
+            val name = etEventName.text.toString().trim()
+            if (name.isEmpty()) {
+                etEventName.error = "Please enter an event name"
+                return@setOnClickListener
             }
-        }
 
-        builder.setNegativeButton("Cancel", null)
-        builder.show()
-    }
+            val hour = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M)
+                timePicker.hour else timePicker.currentHour
+            val minute = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M)
+                timePicker.minute else timePicker.currentMinute
 
-    // 🧱 Add event card to the container
-    private fun addEventCard(eventName: String) {
-        val card = LinearLayout(this)
-        card.orientation = LinearLayout.HORIZONTAL
-        card.setPadding(16, 16, 16, 16)
-        card.setBackgroundResource(android.R.drawable.dialog_holo_light_frame)
-        card.setPadding(24, 16, 24, 16)
-        card.setBackgroundColor(0xFFFFFFFF.toInt())
-
-        val txtEvent = TextView(this)
-        txtEvent.text = eventName
-        txtEvent.textSize = 18f
-        txtEvent.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-
-        val btnEdit = ImageButton(this)
-        btnEdit.setImageResource(R.drawable.dots_edit)
-        btnEdit.setBackgroundColor(0)
-        btnEdit.setOnClickListener { showEditEventDialog(eventName, txtEvent) }
-
-        val btnDelete = ImageButton(this)
-        btnDelete.setImageResource(R.drawable.trash_event)
-        btnDelete.setBackgroundColor(0)
-        btnDelete.setOnClickListener {
-            eventContainer.removeView(card)
-            eventList.remove(eventName)
-            updateEmptyState()
-        }
-
-        card.addView(txtEvent)
-        card.addView(btnEdit)
-        card.addView(btnDelete)
-        eventContainer.addView(card)
-    }
-
-    // ✏️ Edit event name
-    private fun showEditEventDialog(oldName: String, textView: TextView) {
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("Edit Event")
-
-        val input = EditText(this)
-        input.setText(oldName)
-        builder.setView(input)
-
-        builder.setPositiveButton("Save") { _, _ ->
-            val newName = input.text.toString().trim()
-            if (newName.isNotEmpty()) {
-                val index = eventList.indexOf(oldName)
-                if (index != -1) eventList[index] = newName
-                textView.text = newName
-                Toast.makeText(this, "Event renamed", Toast.LENGTH_SHORT).show()
+            val cal = Calendar.getInstance().apply {
+                timeInMillis = selectedDateMillis
+                set(Calendar.HOUR_OF_DAY, hour)
+                set(Calendar.MINUTE, minute)
             }
+
+            val newEvent = Event(
+                id = System.currentTimeMillis(),
+                title = name,
+                dateMillis = cal.timeInMillis,
+                timeMillis = cal.timeInMillis
+            )
+
+            events.add(newEvent)
+            saveEvents()
+            filterEventsByDate()
+            dialog.dismiss()
+
+            val timeString = String.format("%02d:%02d", hour, minute)
+            Toast.makeText(this, "Event added at $timeString", Toast.LENGTH_SHORT).show()
         }
 
-        builder.setNegativeButton("Cancel", null)
-        builder.show()
+        dialog.show()
     }
 
-    // ⚙️ Show or hide empty text
-    private fun updateEmptyState() {
-        emptyText.isVisible = eventList.isEmpty()
+    // --- Edit existing event ---
+    private fun editEvent(event: Event) {
+        val dialogView = layoutInflater.inflate(R.layout.popup_add_event, null)
+        val etEventName = dialogView.findViewById<EditText>(R.id.etEventName)
+        val timePicker = dialogView.findViewById<TimePicker>(R.id.timePicker)
+        val btnAddEvent = dialogView.findViewById<Button>(R.id.btnAddEvent)
+
+        etEventName.setText(event.title)
+
+        val cal = Calendar.getInstance().apply { timeInMillis = event.timeMillis }
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            timePicker.hour = cal.get(Calendar.HOUR_OF_DAY)
+            timePicker.minute = cal.get(Calendar.MINUTE)
+        } else {
+            timePicker.currentHour = cal.get(Calendar.HOUR_OF_DAY)
+            timePicker.currentMinute = cal.get(Calendar.MINUTE)
+        }
+
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .create()
+
+        btnAddEvent.text = "Update Event"
+        btnAddEvent.setOnClickListener {
+            val name = etEventName.text.toString().trim()
+            if (name.isEmpty()) {
+                etEventName.error = "Please enter an event name"
+                return@setOnClickListener
+            }
+
+            val hour = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M)
+                timePicker.hour else timePicker.currentHour
+            val minute = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M)
+                timePicker.minute else timePicker.currentMinute
+
+            val calUpdated = Calendar.getInstance().apply {
+                timeInMillis = event.dateMillis
+                set(Calendar.HOUR_OF_DAY, hour)
+                set(Calendar.MINUTE, minute)
+            }
+
+            event.title = name
+            event.timeMillis = calUpdated.timeInMillis
+            saveEvents()
+            filterEventsByDate()
+            dialog.dismiss()
+
+            Toast.makeText(this, "Event updated", Toast.LENGTH_SHORT).show()
+        }
+
+        dialog.show()
+    }
+
+    // --- Delete Event ---
+    private fun deleteEvent(event: Event) {
+        AlertDialog.Builder(this)
+            .setTitle("Delete Event")
+            .setMessage("Are you sure you want to delete this event?")
+            .setPositiveButton("Yes") { _, _ ->
+                events.remove(event)
+                saveEvents()
+                filterEventsByDate()
+                Toast.makeText(this, "Event deleted", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("No", null)
+            .show()
+    }
+
+    // --- Filter events for selected date ---
+    private fun filterEventsByDate() {
+        val sdf = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
+        val selectedKey = sdf.format(Date(selectedDateMillis))
+
+        val filtered = events.filter {
+            sdf.format(Date(it.dateMillis)) == selectedKey
+        }
+
+        eventAdapter.updateList(filtered)
+    }
+
+    // --- Save events using SharedPreferences ---
+    private fun saveEvents() {
+        val sharedPref = getSharedPreferences("EventPrefs", Context.MODE_PRIVATE)
+        val editor = sharedPref.edit()
+        val json = Gson().toJson(events)
+        editor.putString("event_list", json)
+        editor.apply()
+    }
+
+    // --- Load events from SharedPreferences ---
+    private fun loadEvents() {
+        val sharedPref = getSharedPreferences("EventPrefs", Context.MODE_PRIVATE)
+        val json = sharedPref.getString("event_list", null)
+        if (json != null) {
+            val type = object : TypeToken<MutableList<Event>>() {}.type
+            val savedList: MutableList<Event> = Gson().fromJson(json, type)
+            events.clear()
+            events.addAll(savedList)
+        }
     }
 }
