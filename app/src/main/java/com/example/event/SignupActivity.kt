@@ -21,17 +21,31 @@ class SignUpActivity : AppCompatActivity() {
         val btnSignUp = findViewById<Button>(R.id.buttonSignUp)
         val tvGoToLogin = findViewById<TextView>(R.id.textGoToLogin)
 
-        // ✅ Show AlertDialog when "Sign Up" is clicked
+        // ✅ Show AlertDialog FIRST before signup validation
         btnSignUp.setOnClickListener {
-            val builder = AlertDialog.Builder(this)
-            builder.setTitle("Note")
-            builder.setMessage("We don't need your actual account since this is a college project.")
-            builder.setPositiveButton("OK") { dialog, _ ->
-                dialog.dismiss()
-                handleSignUp(etFullName, etEmail, etUsername, etPassword, etConfirmPassword)
-            }
-            builder.setCancelable(false)
-            builder.show()
+
+            val dialog = AlertDialog.Builder(this)
+                .setTitle("Before You Continue")
+                .setMessage("We don't need your actual account since this is a college project.\nYou may enter any dummy information.")
+                .setCancelable(false)
+                .setPositiveButton("Proceed") { d, _ ->
+                    d.dismiss()
+
+                    // Continue to sign-up validation AFTER confirmation
+                    handleSignUp(
+                        etFullName,
+                        etEmail,
+                        etUsername,
+                        etPassword,
+                        etConfirmPassword
+                    )
+                }
+                .setNegativeButton("Cancel") { d, _ ->
+                    d.dismiss()
+                }
+                .create()
+
+            dialog.show()
         }
 
         // 🔄 Go to Login if already have an account

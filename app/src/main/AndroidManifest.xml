@@ -12,6 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Event">
 
+
         <activity
             android:name=".HomeActivity"
             android:exported="false"

@@ -74,6 +74,20 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    // --- Exit confirmation when pressing BACK ---
+    override fun onBackPressed() {
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Exit App")
+            .setMessage("Are you sure you want to exit the application?")
+            .setPositiveButton("Yes") { _, _ ->
+                finishAffinity() // closes the entire app
+            }
+            .setNegativeButton("No", null)
+            .create()
+
+        dialog.show()
+    }
+
     // --- Show popup dialog to add event ---
     private fun showAddEventDialog() {
         val dialogView = layoutInflater.inflate(R.layout.popup_add_event, null)
@@ -84,6 +98,8 @@ class HomeActivity : AppCompatActivity() {
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
             .create()
+
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
 
         btnAddEvent.setOnClickListener {
             val name = etEventName.text.toString().trim()
@@ -144,6 +160,8 @@ class HomeActivity : AppCompatActivity() {
             .setView(dialogView)
             .create()
 
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
         btnAddEvent.text = "Update Event"
         btnAddEvent.setOnClickListener {
             val name = etEventName.text.toString().trim()
@@ -202,7 +220,7 @@ class HomeActivity : AppCompatActivity() {
         eventAdapter.updateList(filtered)
     }
 
-    // --- Save events using SharedPreferences ---
+    // --- Save events ---
     private fun saveEvents() {
         val sharedPref = getSharedPreferences("EventPrefs", Context.MODE_PRIVATE)
         val editor = sharedPref.edit()
@@ -211,7 +229,7 @@ class HomeActivity : AppCompatActivity() {
         editor.apply()
     }
 
-    // --- Load events from SharedPreferences ---
+    // --- Load events ---
     private fun loadEvents() {
         val sharedPref = getSharedPreferences("EventPrefs", Context.MODE_PRIVATE)
         val json = sharedPref.getString("event_list", null)
