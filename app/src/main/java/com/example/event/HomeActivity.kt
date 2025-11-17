@@ -84,6 +84,11 @@ class HomeActivity : AppCompatActivity() {
         navSettings.setOnClickListener {
             Toast.makeText(this, "Settings clicked", Toast.LENGTH_SHORT).show()
         }
+
+        // Check if we should open add dialog from widget
+        if (intent.getBooleanExtra("open_add_dialog", false)) {
+            showAddEventDialog()
+        }
     }
 
     // --- Exit confirmation when pressing BACK ---
@@ -276,11 +281,24 @@ class HomeActivity : AppCompatActivity() {
         highlightDatesWithEvents()
     }
 
+    // --- Update widget when events change ---
+    private fun updateWidget() {
+        try {
+            // Check if EventWidget class exists before calling it
+            EventWidget::class.java
+            EventWidget.updateAllWidgets(this)
+        } catch (e: Exception) {
+            // Widget not implemented yet, this is fine during development
+            println("Widget not available: ${e.message}")
+        }
+    }
+
     // --- Combined method for event changes ---
     private fun onEventsChanged() {
         saveEvents()
         filterEventsByDate()
         updateCalendarHighlights()
+        updateWidget() // Add widget update
     }
 
     // --- Save events ---
