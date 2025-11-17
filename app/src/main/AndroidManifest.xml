@@ -41,11 +41,6 @@
             </intent-filter>
         </activity>
 
-        <!-- Broadcast Receiver for Event Notifications -->
-        <receiver
-            android:name=".EventNotificationReceiver"
-            android:enabled="true"
-            android:exported="false" />
 
     </application>
 
