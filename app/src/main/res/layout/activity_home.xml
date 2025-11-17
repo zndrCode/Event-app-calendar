@@ -20,14 +20,24 @@
         android:background="#FFFFFF"
         android:elevation="2dp" />
 
-    <!-- Calendar -->
-    <CalendarView
+    <!-- Material Calendar View - SMALLER VERSION -->
+    <com.applandeo.materialcalendarview.CalendarView
         android:id="@+id/calendarView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="300dp"
         android:layout_below="@id/topTitle"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp" />
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        app:headerColor="#FFFFFF"
+        app:headerLabelColor="#000000"
+        app:selectionColor="#2196F3"
+        app:todayLabelColor="#2196F3"
+        app:daysLabelsColor="#000000"
+        app:anotherMonthsDaysLabelsColor="#BDBDBD"
+        app:abbreviationsBarColor="#FFFFFF"
+        app:pagesColor="#FFFFFF" />
 
     <!-- Section label -->
     <TextView

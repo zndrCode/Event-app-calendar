@@ -3,10 +3,14 @@ package com.example.event
 import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
+import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.applandeo.materialcalendarview.CalendarView
+import com.applandeo.materialcalendarview.EventDay
+import com.applandeo.materialcalendarview.listeners.OnDayClickListener
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.text.SimpleDateFormat
@@ -19,6 +23,7 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var fabAdd: LinearLayout
     private lateinit var navHome: LinearLayout
     private lateinit var navSettings: LinearLayout
+    private lateinit var textEmpty: TextView
 
     private lateinit var eventAdapter: EventAdapter
     private val events = mutableListOf<Event>()
@@ -34,6 +39,7 @@ class HomeActivity : AppCompatActivity() {
         fabAdd = findViewById(R.id.fabAdd)
         navHome = findViewById(R.id.navHome)
         navSettings = findViewById(R.id.navSettings)
+        textEmpty = findViewById(R.id.textEmpty)
 
         // RecyclerView setup
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -47,17 +53,23 @@ class HomeActivity : AppCompatActivity() {
         // Load saved events
         loadEvents()
 
-        // Default date
-        selectedDateMillis = calendarView.date
+        // Default date (today)
+        val today = Calendar.getInstance()
+        selectedDateMillis = today.timeInMillis
+        calendarView.setDate(today)
         filterEventsByDate()
 
-        // When user selects a date
-        calendarView.setOnDateChangeListener { _, year, month, dayOfMonth ->
-            val cal = Calendar.getInstance()
-            cal.set(year, month, dayOfMonth)
-            selectedDateMillis = cal.timeInMillis
-            filterEventsByDate()
-        }
+        // Highlight dates with events
+        highlightDatesWithEvents()
+
+        // When user selects a date - CORRECTED VERSION
+        calendarView.setOnDayClickListener(object : OnDayClickListener {
+            override fun onDayClick(eventDay: EventDay) {
+                val calendar = eventDay.calendar
+                selectedDateMillis = calendar.timeInMillis
+                filterEventsByDate()
+            }
+        })
 
         // Add button popup
         fabAdd.setOnClickListener {
@@ -117,6 +129,8 @@ class HomeActivity : AppCompatActivity() {
                 timeInMillis = selectedDateMillis
                 set(Calendar.HOUR_OF_DAY, hour)
                 set(Calendar.MINUTE, minute)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
             }
 
             val newEvent = Event(
@@ -127,8 +141,7 @@ class HomeActivity : AppCompatActivity() {
             )
 
             events.add(newEvent)
-            saveEvents()
-            filterEventsByDate()
+            onEventsChanged() // This saves, filters, and updates highlights
             dialog.dismiss()
 
             val timeString = String.format("%02d:%02d", hour, minute)
@@ -179,12 +192,13 @@ class HomeActivity : AppCompatActivity() {
                 timeInMillis = event.dateMillis
                 set(Calendar.HOUR_OF_DAY, hour)
                 set(Calendar.MINUTE, minute)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
             }
 
             event.title = name
             event.timeMillis = calUpdated.timeInMillis
-            saveEvents()
-            filterEventsByDate()
+            onEventsChanged() // This saves, filters, and updates highlights
             dialog.dismiss()
 
             Toast.makeText(this, "Event updated", Toast.LENGTH_SHORT).show()
@@ -200,8 +214,7 @@ class HomeActivity : AppCompatActivity() {
             .setMessage("Are you sure you want to delete this event?")
             .setPositiveButton("Yes") { _, _ ->
                 events.remove(event)
-                saveEvents()
-                filterEventsByDate()
+                onEventsChanged() // This saves, filters, and updates highlights
                 Toast.makeText(this, "Event deleted", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("No", null)
@@ -218,6 +231,56 @@ class HomeActivity : AppCompatActivity() {
         }
 
         eventAdapter.updateList(filtered)
+
+        // Show empty state if no events
+        if (filtered.isEmpty()) {
+            textEmpty.visibility = View.VISIBLE
+            recyclerView.visibility = View.GONE
+        } else {
+            textEmpty.visibility = View.GONE
+            recyclerView.visibility = View.VISIBLE
+        }
+    }
+
+    // --- Highlight dates that have events ---
+    private fun highlightDatesWithEvents() {
+        val eventDays = mutableListOf<EventDay>()
+
+        // Get unique dates that have events
+        val uniqueDates = events.map { event ->
+            val cal = Calendar.getInstance().apply {
+                timeInMillis = event.dateMillis
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+            cal.timeInMillis
+        }.distinct()
+
+        uniqueDates.forEach { dateMillis ->
+            val calendar = Calendar.getInstance().apply {
+                timeInMillis = dateMillis
+            }
+
+            // Create EventDay with dot indicator
+            val eventDay = EventDay(calendar, R.drawable.event_dot_indicator)
+            eventDays.add(eventDay)
+        }
+
+        calendarView.setEvents(eventDays)
+    }
+
+    // --- Update highlight when events change ---
+    private fun updateCalendarHighlights() {
+        highlightDatesWithEvents()
+    }
+
+    // --- Combined method for event changes ---
+    private fun onEventsChanged() {
+        saveEvents()
+        filterEventsByDate()
+        updateCalendarHighlights()
     }
 
     // --- Save events ---
