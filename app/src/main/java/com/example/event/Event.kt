@@ -1,10 +1,14 @@
 package com.example.event
 
+import java.io.Serializable
+
 data class Event(
     val id: Long,
     var title: String,
-    val dateMillis: Long,
+    var dateMillis: Long,
     var timeMillis: Long,
-    var notificationEnabled: Boolean = true, // Add this field
-    var notificationMinutesBefore: Int = 15  // Add this field
-)
+    var location: String = "",
+    var isAllDay: Boolean = false,
+    var endTimeMillis: Long = 0L,
+    var color: Int = 0xFF2196F3.toInt()
+) : Serializable

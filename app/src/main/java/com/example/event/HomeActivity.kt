@@ -2,9 +2,12 @@ package com.example.event
 
 import android.app.AlertDialog
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.*
+import android.widget.LinearLayout
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -20,7 +23,7 @@ class HomeActivity : AppCompatActivity() {
 
     private lateinit var calendarView: CalendarView
     private lateinit var recyclerView: RecyclerView
-    private lateinit var fabAdd: LinearLayout
+    private lateinit var fabAdd: View
     private lateinit var navHome: LinearLayout
     private lateinit var navSettings: LinearLayout
     private lateinit var textEmpty: TextView
@@ -28,6 +31,11 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var eventAdapter: EventAdapter
     private val events = mutableListOf<Event>()
     private var selectedDateMillis: Long = 0L
+
+    companion object {
+        private const val ADD_EVENT_REQUEST_CODE = 1001
+        private const val EDIT_EVENT_REQUEST_CODE = 1002
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,7 +70,7 @@ class HomeActivity : AppCompatActivity() {
         // Highlight dates with events
         highlightDatesWithEvents()
 
-        // When user selects a date - CORRECTED VERSION
+        // When user selects a date
         calendarView.setOnDayClickListener(object : OnDayClickListener {
             override fun onDayClick(eventDay: EventDay) {
                 val calendar = eventDay.calendar
@@ -97,119 +105,49 @@ class HomeActivity : AppCompatActivity() {
             .setTitle("Exit App")
             .setMessage("Are you sure you want to exit the application?")
             .setPositiveButton("Yes") { _, _ ->
-                finishAffinity() // closes the entire app
+                finishAffinity()
             }
             .setNegativeButton("No", null)
             .create()
-
         dialog.show()
     }
 
-    // --- Show popup dialog to add event ---
+    // --- Show Add Event Activity ---
     private fun showAddEventDialog() {
-        val dialogView = layoutInflater.inflate(R.layout.popup_add_event, null)
-        val etEventName = dialogView.findViewById<EditText>(R.id.etEventName)
-        val timePicker = dialogView.findViewById<TimePicker>(R.id.timePicker)
-        val btnAddEvent = dialogView.findViewById<Button>(R.id.btnAddEvent)
-
-        val dialog = AlertDialog.Builder(this)
-            .setView(dialogView)
-            .create()
-
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-
-        btnAddEvent.setOnClickListener {
-            val name = etEventName.text.toString().trim()
-            if (name.isEmpty()) {
-                etEventName.error = "Please enter an event name"
-                return@setOnClickListener
-            }
-
-            val hour = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M)
-                timePicker.hour else timePicker.currentHour
-            val minute = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M)
-                timePicker.minute else timePicker.currentMinute
-
-            val cal = Calendar.getInstance().apply {
-                timeInMillis = selectedDateMillis
-                set(Calendar.HOUR_OF_DAY, hour)
-                set(Calendar.MINUTE, minute)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }
-
-            val newEvent = Event(
-                id = System.currentTimeMillis(),
-                title = name,
-                dateMillis = cal.timeInMillis,
-                timeMillis = cal.timeInMillis
-            )
-
-            events.add(newEvent)
-            onEventsChanged() // This saves, filters, and updates highlights
-            dialog.dismiss()
-
-            val timeString = String.format("%02d:%02d", hour, minute)
-            Toast.makeText(this, "Event added at $timeString", Toast.LENGTH_SHORT).show()
-        }
-
-        dialog.show()
+        val intent = Intent(this, AddEventActivity::class.java)
+        intent.putExtra("selected_date", selectedDateMillis)
+        startActivityForResult(intent, ADD_EVENT_REQUEST_CODE)
     }
 
     // --- Edit existing event ---
     private fun editEvent(event: Event) {
-        val dialogView = layoutInflater.inflate(R.layout.popup_add_event, null)
-        val etEventName = dialogView.findViewById<EditText>(R.id.etEventName)
-        val timePicker = dialogView.findViewById<TimePicker>(R.id.timePicker)
-        val btnAddEvent = dialogView.findViewById<Button>(R.id.btnAddEvent)
+        val intent = Intent(this, AddEventActivity::class.java)
+        intent.putExtra("selected_date", selectedDateMillis)
+        intent.putExtra("edit_event", event)
+        startActivityForResult(intent, EDIT_EVENT_REQUEST_CODE)
+    }
 
-        etEventName.setText(event.title)
+    // --- Handle activity results ---
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
 
-        val cal = Calendar.getInstance().apply { timeInMillis = event.timeMillis }
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            timePicker.hour = cal.get(Calendar.HOUR_OF_DAY)
-            timePicker.minute = cal.get(Calendar.MINUTE)
-        } else {
-            timePicker.currentHour = cal.get(Calendar.HOUR_OF_DAY)
-            timePicker.currentMinute = cal.get(Calendar.MINUTE)
-        }
-
-        val dialog = AlertDialog.Builder(this)
-            .setView(dialogView)
-            .create()
-
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-
-        btnAddEvent.text = "Update Event"
-        btnAddEvent.setOnClickListener {
-            val name = etEventName.text.toString().trim()
-            if (name.isEmpty()) {
-                etEventName.error = "Please enter an event name"
-                return@setOnClickListener
+        if (resultCode == RESULT_OK) {
+            when (requestCode) {
+                ADD_EVENT_REQUEST_CODE -> {
+                    val newEvent = data?.getSerializableExtra("new_event") as? Event
+                    newEvent?.let {
+                        events.add(it)
+                        onEventsChanged()
+                        Toast.makeText(this, "Event added successfully", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                EDIT_EVENT_REQUEST_CODE -> {
+                    // Events are updated in-place, just refresh
+                    onEventsChanged()
+                    Toast.makeText(this, "Event updated successfully", Toast.LENGTH_SHORT).show()
+                }
             }
-
-            val hour = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M)
-                timePicker.hour else timePicker.currentHour
-            val minute = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M)
-                timePicker.minute else timePicker.currentMinute
-
-            val calUpdated = Calendar.getInstance().apply {
-                timeInMillis = event.dateMillis
-                set(Calendar.HOUR_OF_DAY, hour)
-                set(Calendar.MINUTE, minute)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }
-
-            event.title = name
-            event.timeMillis = calUpdated.timeInMillis
-            onEventsChanged() // This saves, filters, and updates highlights
-            dialog.dismiss()
-
-            Toast.makeText(this, "Event updated", Toast.LENGTH_SHORT).show()
         }
-
-        dialog.show()
     }
 
     // --- Delete Event ---
@@ -219,7 +157,7 @@ class HomeActivity : AppCompatActivity() {
             .setMessage("Are you sure you want to delete this event?")
             .setPositiveButton("Yes") { _, _ ->
                 events.remove(event)
-                onEventsChanged() // This saves, filters, and updates highlights
+                onEventsChanged()
                 Toast.makeText(this, "Event deleted", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("No", null)
@@ -267,8 +205,6 @@ class HomeActivity : AppCompatActivity() {
             val calendar = Calendar.getInstance().apply {
                 timeInMillis = dateMillis
             }
-
-            // Create EventDay with dot indicator
             val eventDay = EventDay(calendar, R.drawable.event_dot_indicator)
             eventDays.add(eventDay)
         }
@@ -284,11 +220,9 @@ class HomeActivity : AppCompatActivity() {
     // --- Update widget when events change ---
     private fun updateWidget() {
         try {
-            // Check if EventWidget class exists before calling it
             EventWidget::class.java
             EventWidget.updateAllWidgets(this)
         } catch (e: Exception) {
-            // Widget not implemented yet, this is fine during development
             println("Widget not available: ${e.message}")
         }
     }
@@ -298,7 +232,7 @@ class HomeActivity : AppCompatActivity() {
         saveEvents()
         filterEventsByDate()
         updateCalendarHighlights()
-        updateWidget() // Add widget update
+        updateWidget()
     }
 
     // --- Save events ---

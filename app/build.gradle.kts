@@ -41,7 +41,7 @@ android {
 
 dependencies {
 
-
+    implementation("com.google.android.material:material:1.9.0-or-later")
     implementation("androidx.glance:glance-appwidget:1.0.0")
     implementation("com.applandeo:material-calendar-view:1.9.2")
     implementation("com.google.android.material:material:1.13.0")

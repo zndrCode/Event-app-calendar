@@ -20,7 +20,7 @@
         android:background="#FFFFFF"
         android:elevation="2dp" />
 
-    <!-- Material Calendar View - SMALLER VERSION -->
+    <!-- Material Calendar View -->
     <com.applandeo.materialcalendarview.CalendarView
         android:id="@+id/calendarView"
         android:layout_width="match_parent"
@@ -76,65 +76,78 @@
         android:paddingStart="12dp"
         android:paddingEnd="12dp" />
 
-    <!-- Floating Add Button -->
-    <LinearLayout
-        android:id="@+id/fabAdd"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginEnd="20dp"
-        android:layout_marginBottom="92dp"
-        android:gravity="center"
-        android:background="@drawable/btn_circle"
-        android:elevation="4dp"
-        android:orientation="vertical">
-
-        <ImageView
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@drawable/plus_outline"
-            android:contentDescription="Add Event" />
-    </LinearLayout>
-
-    <!-- Bottom Navigation -->
+    <!-- Bottom Navigation with Improved Add Button -->
     <LinearLayout
         android:id="@+id/bottomNav"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
+        android:layout_height="72dp"
         android:layout_alignParentBottom="true"
         android:orientation="horizontal"
         android:background="#FFFFFF"
-        android:elevation="8dp"
-        android:gravity="center">
+        android:elevation="16dp"
+        android:gravity="center_vertical">
 
+        <!-- Home Button -->
         <LinearLayout
             android:id="@+id/navHome"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:gravity="center">
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="8dp">
 
             <ImageView
-                android:layout_width="28dp"
-                android:layout_height="28dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:src="@drawable/home_logo"
                 app:tint="#2196F3"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Home"
+                android:textSize="10sp"
+                android:textColor="#2196F3"
+                android:layout_marginTop="4dp"/>
         </LinearLayout>
 
+        <!-- Improved Centered Add Button -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabAdd"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_gravity="center"
+            android:layout_marginBottom="24dp"
+            android:src="@drawable/plus_outline"
+            app:backgroundTint="#2196F3"
+            app:tint="#FFFFFF"
+            app:elevation="8dp"
+            android:contentDescription="Add Event" />
+
+        <!-- Settings Button -->
         <LinearLayout
             android:id="@+id/navSettings"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:gravity="center">
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="8dp">
 
             <ImageView
-                android:layout_width="28dp"
-                android:layout_height="28dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:src="@drawable/profile_setting_logo"
                 app:tint="#9E9E9E" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Settings"
+                android:textSize="10sp"
+                android:textColor="#9E9E9E"
+                android:layout_marginTop="4dp"/>
         </LinearLayout>
+
     </LinearLayout>
 
 </RelativeLayout>

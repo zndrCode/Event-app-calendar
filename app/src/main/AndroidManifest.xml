@@ -22,6 +22,12 @@
         android:theme="@style/Theme.Event">
 
         <activity
+            android:name=".AddEventActivity"
+            android:theme="@style/Theme.Event"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
             android:name=".HomeActivity"
             android:exported="false"
             android:theme="@style/Theme.Event" />
