@@ -29,7 +29,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Add Event"
+                android:text="Create Event"
                 android:textSize="22sp"
                 android:textStyle="bold"
                 android:textColor="#212121"
@@ -39,7 +39,7 @@
                 android:id="@+id/btnSave"
                 android:layout_width="42dp"
                 android:layout_height="42dp"
-                android:background="@drawable/bg_teal_button"
+                android:background="@drawable/btn_gradient"
                 android:src="@drawable/ic_done_white"
                 android:tint="#FFFFFF"/>
         </LinearLayout>
@@ -94,7 +94,7 @@
                 android:id="@+id/switchAllDay"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:thumbTint="#00AFA4"
+                android:thumbTint="#2196F3"
                 android:trackTint="#BBDEFB"/>
         </LinearLayout>
 
@@ -129,7 +129,7 @@
                     android:layout_width="22dp"
                     android:layout_height="22dp"
                     android:src="@drawable/ic_calendar"
-                    android:tint="#00AFA4"/>
+                    android:tint="#2196F3"/>
 
                 <TextView
                     android:id="@+id/txtStartDate"
@@ -146,7 +146,7 @@
                     android:layout_width="22dp"
                     android:layout_height="22dp"
                     android:src="@drawable/ic_time"
-                    android:tint="#00AFA4"/>
+                    android:tint="#2196F3"/>
 
                 <TextView
                     android:id="@+id/txtStartTime"
@@ -187,7 +187,7 @@
                     android:layout_width="22dp"
                     android:layout_height="22dp"
                     android:src="@drawable/ic_calendar"
-                    android:tint="#00AFA4"/>
+                    android:tint="#2196F3"/>
 
                 <TextView
                     android:id="@+id/txtEndDate"
@@ -204,7 +204,7 @@
                     android:layout_width="22dp"
                     android:layout_height="22dp"
                     android:src="@drawable/ic_time"
-                    android:tint="#00AFA4"/>
+                    android:tint="#2196F3"/>
 
                 <TextView
                     android:id="@+id/txtEndTime"
