@@ -8,291 +8,213 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="24dp">
+        android:orientation="vertical">
 
-        <!-- Header with Back Button -->
+        <!-- HEADER -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="24dp">
+            android:padding="12dp"
+            android:gravity="center_vertical">
 
             <ImageButton
                 android:id="@+id/btnBack"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:background="@android:color/transparent"
                 android:src="@drawable/ic_arrow_back"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Back"
-                android:padding="12dp" />
+                android:tint="#424242"/>
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Add New Event"
-                android:textSize="20sp"
+                android:text="Add Event"
+                android:textSize="22sp"
                 android:textStyle="bold"
                 android:textColor="#212121"
-                android:gravity="center" />
+                android:gravity="center"/>
 
-            <!-- Spacer to balance the back button -->
-            <View
-                android:layout_width="48dp"
-                android:layout_height="48dp" />
+            <ImageButton
+                android:id="@+id/btnSave"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:background="@drawable/bg_teal_button"
+                android:src="@drawable/ic_done_white"
+                android:tint="#FFFFFF"/>
         </LinearLayout>
 
-        <!-- Rest of your existing content remains the same -->
-        <TextView
+        <!-- EVENT TITLE CARD -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Event Title"
-            android:textSize="14sp"
-            android:textColor="#757575"
-            android:layout_marginBottom="8dp" />
+            android:orientation="vertical"
+            android:padding="18dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/card_white_round">
 
-        <EditText
-            android:id="@+id/etEventName"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:hint="Enter event title"
-            android:maxLines="1"
-            android:textSize="16sp"
-            android:layout_marginBottom="16dp"
-            android:background="@drawable/edit_text_background"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Event Title"
+                android:textSize="14sp"
+                android:textColor="#757575"/>
 
-        <!-- Location -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Location (optional)"
-            android:textSize="14sp"
-            android:textColor="#757575"
-            android:layout_marginBottom="8dp" />
+            <EditText
+                android:id="@+id/etEventName"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="Enter event title"
+                android:textSize="16sp"
+                android:background="@android:color/transparent"
+                android:textColor="#212121"
+                android:textColorHint="#9E9E9E"
+                android:paddingStart="4dp"/>
+        </LinearLayout>
 
-        <EditText
-            android:id="@+id/etLocation"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:hint="Enter location"
-            android:maxLines="1"
-            android:textSize="16sp"
-            android:layout_marginBottom="24dp"
-            android:background="@drawable/edit_text_background"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp" />
-
-        <!-- All Day Switch -->
+        <!-- ALL DAY SWITCH -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
+            android:padding="18dp"
+            android:layout_marginTop="12dp"
             android:gravity="center_vertical"
-            android:layout_marginBottom="24dp"
-            android:background="@drawable/edit_text_background"
-            android:padding="12dp">
+            android:background="@drawable/card_white_round">
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="All day event"
+                android:text="All Day Event"
                 android:textSize="16sp"
-                android:textColor="#212121" />
+                android:textColor="#212121"/>
 
             <Switch
                 android:id="@+id/switchAllDay"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:thumbTint="#00AFA4"
+                android:trackTint="#BBDEFB"/>
         </LinearLayout>
 
-        <!-- Time Container (hidden when all-day is selected) -->
+        <!-- DATE TIME CARD -->
         <LinearLayout
-            android:id="@+id/timeContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginBottom="24dp">
+            android:padding="18dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/card_white_round">
 
-            <!-- Start Date & Time Section -->
+            <!-- START -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Select your start date and time"
+                android:text="Start"
                 android:textSize="14sp"
-                android:textColor="#757575"
-                android:layout_marginBottom="12dp" />
+                android:textColor="#757575"/>
 
-            <!-- Start Date Row -->
             <LinearLayout
+                android:id="@+id/startDateCard"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="50dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="12dp"
-                android:background="@drawable/edit_text_background"
-                android:padding="12dp">
+                android:background="@drawable/input_field_white"
+                android:padding="10dp"
+                android:layout_marginTop="6dp">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_calendar"
+                    android:tint="#00AFA4"/>
 
                 <TextView
+                    android:id="@+id/txtStartDate"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Start Date"
-                    android:textSize="14sp"
-                    android:textColor="#212121" />
+                    android:text="Thu, 20 Nov 2025"
+                    android:textColor="#212121"
+                    android:textSize="16sp"
+                    android:paddingStart="10dp"/>
 
-                <Button
-                    android:id="@+id/btnStartDate"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:text="Select Date"
-                    android:textSize="12sp"
-                    android:backgroundTint="#2196F3"
-                    android:textColor="#FFFFFF"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="12dp" />
-            </LinearLayout>
-
-            <!-- Start Time Row -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="20dp"
-                android:background="@drawable/edit_text_background"
-                android:padding="12dp">
+                <ImageView
+                    android:id="@+id/startTimeIcon"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_time"
+                    android:tint="#00AFA4"/>
 
                 <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Start Time"
-                    android:textSize="14sp"
-                    android:textColor="#212121" />
-
-                <Button
-                    android:id="@+id/btnStartTime"
+                    android:id="@+id/txtStartTime"
                     android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:text="Select Time"
-                    android:textSize="12sp"
-                    android:backgroundTint="#2196F3"
-                    android:textColor="#FFFFFF"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="12dp" />
+                    android:layout_height="wrap_content"
+                    android:text="01:00 AM"
+                    android:textSize="16sp"
+                    android:textColor="#212121"
+                    android:paddingStart="10dp"/>
             </LinearLayout>
 
-            <!-- End Date & Time Section -->
+            <!-- DIVIDER -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#E0E0E0"
+                android:layout_marginVertical="16dp"/>
+
+            <!-- END -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Select your end date and time"
+                android:text="End"
                 android:textSize="14sp"
-                android:textColor="#757575"
-                android:layout_marginBottom="12dp" />
+                android:textColor="#757575"/>
 
-            <!-- End Date Row -->
             <LinearLayout
+                android:id="@+id/endDateCard"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="50dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="12dp"
-                android:background="@drawable/edit_text_background"
-                android:padding="12dp">
+                android:background="@drawable/input_field_white"
+                android:padding="10dp"
+                android:layout_marginTop="6dp">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_calendar"
+                    android:tint="#00AFA4"/>
 
                 <TextView
+                    android:id="@+id/txtEndDate"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="End Date"
-                    android:textSize="14sp"
-                    android:textColor="#212121" />
+                    android:text="Thu, 20 Nov 2025"
+                    android:textSize="16sp"
+                    android:textColor="#212121"
+                    android:paddingStart="10dp"/>
 
-                <Button
-                    android:id="@+id/btnEndDate"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:text="Select Date"
-                    android:textSize="12sp"
-                    android:backgroundTint="#2196F3"
-                    android:textColor="#FFFFFF"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="12dp" />
-            </LinearLayout>
-
-            <!-- End Time Row -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="8dp"
-                android:background="@drawable/edit_text_background"
-                android:padding="12dp">
+                <ImageView
+                    android:id="@+id/endTimeIcon"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_time"
+                    android:tint="#00AFA4"/>
 
                 <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="End Time"
-                    android:textSize="14sp"
-                    android:textColor="#212121" />
-
-                <Button
-                    android:id="@+id/btnEndTime"
+                    android:id="@+id/txtEndTime"
                     android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:text="Select Time"
-                    android:textSize="12sp"
-                    android:backgroundTint="#2196F3"
-                    android:textColor="#FFFFFF"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="12dp" />
+                    android:layout_height="wrap_content"
+                    android:text="02:00 AM"
+                    android:textSize="16sp"
+                    android:textColor="#212121"
+                    android:paddingStart="10dp"/>
             </LinearLayout>
-
-        </LinearLayout>
-
-        <!-- Button Container -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:layout_marginTop="16dp"
-            android:weightSum="2">
-
-            <!-- Cancel Button -->
-            <Button
-                android:id="@+id/btnCancel"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:text="Cancel"
-                android:textSize="16sp"
-                android:textStyle="normal"
-                android:backgroundTint="#9E9E9E"
-                android:textColor="#FFFFFF"
-                android:layout_marginEnd="8dp" />
-
-            <!-- Add Event Button -->
-            <Button
-                android:id="@+id/btnAddEvent"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:text="Add Event"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:backgroundTint="#2196F3"
-                android:textColor="#FFFFFF"
-                android:layout_marginStart="8dp" />
-
         </LinearLayout>
 
     </LinearLayout>

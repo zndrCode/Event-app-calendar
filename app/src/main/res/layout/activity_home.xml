@@ -117,7 +117,7 @@
             android:layout_width="56dp"
             android:layout_height="56dp"
             android:layout_gravity="center"
-            android:layout_marginBottom="24dp"
+            android:layout_marginBottom="6dp"
             android:src="@drawable/plus_outline"
             app:backgroundTint="#2196F3"
             app:tint="#FFFFFF"
@@ -137,7 +137,7 @@
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@drawable/profile_setting_logo"
+                android:src="@drawable/settings_logo"
                 app:tint="#9E9E9E" />
             <TextView
                 android:layout_width="wrap_content"
