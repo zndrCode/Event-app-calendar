@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.text.InputType
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 
 class MainActivity : AppCompatActivity() {
 
@@ -13,6 +14,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Apply saved theme before setting content view
+        applySavedTheme()
+
         setContentView(R.layout.activity_login)
 
         val etUsername = findViewById<EditText>(R.id.editTextUsername)
@@ -82,5 +87,11 @@ class MainActivity : AppCompatActivity() {
 
             dialog.show()
         }
+    }
+
+    private fun applySavedTheme() {
+        val sharedPrefs = getSharedPreferences("AppSettings", MODE_PRIVATE)
+        val savedTheme = sharedPrefs.getInt("app_theme", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+        AppCompatDelegate.setDefaultNightMode(savedTheme)
     }
 }

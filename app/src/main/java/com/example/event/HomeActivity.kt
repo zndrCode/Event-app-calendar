@@ -9,6 +9,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.applandeo.materialcalendarview.CalendarView
@@ -39,6 +40,10 @@ class HomeActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Apply saved theme before setting content view
+        applySavedTheme()
+
         setContentView(R.layout.activity_home)
 
         // Initialize views
@@ -90,7 +95,9 @@ class HomeActivity : AppCompatActivity() {
         }
 
         navSettings.setOnClickListener {
-            Toast.makeText(this, "Settings clicked", Toast.LENGTH_SHORT).show()
+            // Navigate to Settings Activity
+            val intent = Intent(this, SettingsActivity::class.java)
+            startActivity(intent)
         }
 
         // Check if we should open add dialog from widget
@@ -254,5 +261,11 @@ class HomeActivity : AppCompatActivity() {
             events.clear()
             events.addAll(savedList)
         }
+    }
+
+    private fun applySavedTheme() {
+        val sharedPrefs = getSharedPreferences("AppSettings", MODE_PRIVATE)
+        val savedTheme = sharedPrefs.getInt("app_theme", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+        AppCompatDelegate.setDefaultNightMode(savedTheme)
     }
 }
