@@ -109,19 +109,20 @@
                 android:maxLines="2"
                 android:ellipsize="end" />
 
-            <!-- Event Location -->
+            <!-- Event Description -->
             <TextView
-                android:id="@+id/tvEventLocation"
+                android:id="@+id/tvEventDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Small meeting room"
                 android:textSize="14sp"
                 android:textColor="#757575"
                 android:layout_marginTop="4dp"
-                android:maxLines="1"
-                android:ellipsize="end" />
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:visibility="gone" />
 
-            <!-- Action Buttons - UPDATED SIZE -->
+            <!-- Action Buttons -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

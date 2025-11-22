@@ -17,7 +17,7 @@ class EventAdapter(
 
     class EventViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val tvEventTitle: TextView = itemView.findViewById(R.id.tvEventTitle)
-        val tvEventLocation: TextView = itemView.findViewById(R.id.tvEventLocation)
+        val tvEventDescription: TextView = itemView.findViewById(R.id.tvEventDescription) // Add this
         val tvAllDay: TextView = itemView.findViewById(R.id.tvAllDay)
         val timeContainer: LinearLayout = itemView.findViewById(R.id.timeContainer)
         val tvStartTime: TextView = itemView.findViewById(R.id.tvStartTime)
@@ -40,7 +40,15 @@ class EventAdapter(
         val event = events[position]
 
         holder.tvEventTitle.text = event.title
-        holder.tvEventLocation.text = event.location
+
+        // Handle description - show if not empty, hide if empty
+        if (event.description.isNotEmpty()) {
+            holder.tvEventDescription.text = event.description
+            holder.tvEventDescription.visibility = View.VISIBLE
+        } else {
+            holder.tvEventDescription.visibility = View.GONE
+        }
+
         holder.colorIndicator.setBackgroundColor(event.color)
 
         if (event.isAllDay) {

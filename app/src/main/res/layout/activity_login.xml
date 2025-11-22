@@ -12,7 +12,7 @@
         android:id="@+id/imageLogo"
         android:layout_width="100dp"
         android:layout_height="100dp"
-        android:src="@drawable/login_logo"
+        android:src="@drawable/event_logo"
         android:contentDescription="@string/app_name"
         android:layout_marginBottom="24dp"/>
 
@@ -57,7 +57,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:hint="username"
+            android:hint="Username"
             android:background="@null"
             android:inputType="textPersonName"
             android:textSize="16sp"/>
@@ -81,18 +81,18 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:hint="password"
+            android:hint="Password"
             android:background="@null"
             android:inputType="textPassword"
             android:textSize="16sp" />
 
         <ImageView
             android:id="@+id/imageTogglePassword"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@android:drawable/ic_menu_view"
+            android:layout_width="23dp"
+            android:layout_height="18dp"
             android:contentDescription="Toggle Password Visibility"
-            android:padding="4dp" />
+            android:padding="4dp"
+            android:src="@android:drawable/ic_menu_view" />
 </LinearLayout>
 
     <Button

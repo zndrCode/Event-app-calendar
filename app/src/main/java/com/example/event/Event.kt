@@ -5,6 +5,7 @@ import java.io.Serializable
 data class Event(
     val id: Long,
     var title: String,
+    var description: String = "", // Add this line
     var dateMillis: Long,
     var timeMillis: Long,
     var location: String = "",

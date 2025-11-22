@@ -72,6 +72,37 @@
                 android:paddingStart="4dp"/>
         </LinearLayout>
 
+        <!-- DESCRIPTION CARD -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="18dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/card_white_round">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Description"
+                android:textSize="14sp"
+                android:textColor="#757575"/>
+
+            <EditText
+                android:id="@+id/etDescription"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="Enter description"
+                android:textSize="16sp"
+                android:background="@android:color/transparent"
+                android:textColor="#212121"
+                android:textColorHint="#9E9E9E"
+                android:paddingStart="4dp"
+                android:inputType="textMultiLine"
+                android:minLines="4"
+                android:maxLines="8"/>
+        </LinearLayout>
+
         <!-- ALL DAY SWITCH -->
         <LinearLayout
             android:layout_width="match_parent"

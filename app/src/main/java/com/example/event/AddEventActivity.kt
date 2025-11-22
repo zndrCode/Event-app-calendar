@@ -13,6 +13,7 @@ import java.util.*
 class AddEventActivity : AppCompatActivity() {
 
     private lateinit var etEventName: EditText
+    private lateinit var etDescription: EditText
     private lateinit var switchAllDay: Switch
     private lateinit var btnBack: ImageButton
     private lateinit var btnSave: ImageButton
@@ -23,7 +24,8 @@ class AddEventActivity : AppCompatActivity() {
     private lateinit var startDateCard: LinearLayout
     private lateinit var endDateCard: LinearLayout
 
-    private var selectedDateMillis: Long = 0L
+    private var selectedStartDateMillis: Long = 0L // Separate start date
+    private var selectedEndDateMillis: Long = 0L   // Separate end date
     private var startTimeMillis: Long = 0L
     private var endTimeMillis: Long = 0L
     private var editEvent: Event? = null
@@ -32,15 +34,16 @@ class AddEventActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.popup_add_event_enhanced)
 
-        selectedDateMillis = intent.getLongExtra("selected_date", System.currentTimeMillis())
+        val initialDateMillis = intent.getLongExtra("selected_date", System.currentTimeMillis())
         editEvent = intent.getSerializableExtra("edit_event") as? Event
 
-        initializeViews()
+        initializeViews(initialDateMillis)
         setupClickListeners()
     }
 
-    private fun initializeViews() {
+    private fun initializeViews(initialDateMillis: Long) {
         etEventName = findViewById(R.id.etEventName)
+        etDescription = findViewById(R.id.etDescription)
         switchAllDay = findViewById(R.id.switchAllDay)
         btnBack = findViewById(R.id.btnBack)
         btnSave = findViewById(R.id.btnSave)
@@ -55,6 +58,8 @@ class AddEventActivity : AppCompatActivity() {
             loadEventForEdit()
         } else {
             val now = Calendar.getInstance()
+            selectedStartDateMillis = initialDateMillis
+            selectedEndDateMillis = initialDateMillis
             startTimeMillis = now.timeInMillis
             endTimeMillis = now.timeInMillis + 3600000 // 1 hour later
         }
@@ -65,8 +70,11 @@ class AddEventActivity : AppCompatActivity() {
     private fun loadEventForEdit() {
         editEvent?.let { event ->
             etEventName.setText(event.title)
+            etDescription.setText(event.description)
             switchAllDay.isChecked = event.isAllDay
 
+            selectedStartDateMillis = event.dateMillis
+            selectedEndDateMillis = event.dateMillis // Initially same as start date
             startTimeMillis = event.timeMillis
             endTimeMillis = if (event.endTimeMillis > 0) event.endTimeMillis else startTimeMillis + 3600000
 
@@ -100,26 +108,26 @@ class AddEventActivity : AppCompatActivity() {
 
         // Start date/time selection
         startDateCard.setOnClickListener {
-            showDatePicker(true)
+            showDatePicker(true) // true for start date
         }
 
         txtStartTime.setOnClickListener {
-            showTimePicker(true)
+            showTimePicker(true) // true for start time
         }
 
         // End date/time selection
         endDateCard.setOnClickListener {
-            showDatePicker(false)
+            showDatePicker(false) // false for end date
         }
 
         txtEndTime.setOnClickListener {
-            showTimePicker(false)
+            showTimePicker(false) // false for end time
         }
     }
 
     private fun showDatePicker(isStart: Boolean) {
         val calendar = Calendar.getInstance()
-        calendar.timeInMillis = selectedDateMillis
+        calendar.timeInMillis = if (isStart) selectedStartDateMillis else selectedEndDateMillis
 
         val datePicker = DatePickerDialog(this, { _, year, month, day ->
             val selectedCalendar = Calendar.getInstance().apply {
@@ -130,7 +138,20 @@ class AddEventActivity : AppCompatActivity() {
                 set(Calendar.MILLISECOND, 0)
             }
 
-            selectedDateMillis = selectedCalendar.timeInMillis
+            if (isStart) {
+                selectedStartDateMillis = selectedCalendar.timeInMillis
+                // If start date is after end date, adjust end date to be same as start
+                if (selectedStartDateMillis > selectedEndDateMillis) {
+                    selectedEndDateMillis = selectedStartDateMillis
+                }
+            } else {
+                selectedEndDateMillis = selectedCalendar.timeInMillis
+                // If end date is before start date, adjust start date to be same as end
+                if (selectedEndDateMillis < selectedStartDateMillis) {
+                    selectedStartDateMillis = selectedEndDateMillis
+                }
+            }
+
             updateDateTimeDisplays()
 
         }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
@@ -143,6 +164,7 @@ class AddEventActivity : AppCompatActivity() {
         calendar.timeInMillis = if (isStart) startTimeMillis else endTimeMillis
 
         val timePicker = TimePickerDialog(this, { _, hour, minute ->
+            val selectedDateMillis = if (isStart) selectedStartDateMillis else selectedEndDateMillis
             val selectedCalendar = Calendar.getInstance().apply {
                 timeInMillis = selectedDateMillis
                 set(Calendar.HOUR_OF_DAY, hour)
@@ -153,13 +175,15 @@ class AddEventActivity : AppCompatActivity() {
 
             if (isStart) {
                 startTimeMillis = selectedCalendar.timeInMillis
-                if (endTimeMillis < startTimeMillis) {
-                    endTimeMillis = startTimeMillis + 3600000 // Ensure end is after start
+                // If same date and start time is after end time, adjust end time
+                if (selectedStartDateMillis == selectedEndDateMillis && startTimeMillis > endTimeMillis) {
+                    endTimeMillis = startTimeMillis + 3600000 // 1 hour later
                 }
             } else {
                 endTimeMillis = selectedCalendar.timeInMillis
-                if (endTimeMillis < startTimeMillis) {
-                    startTimeMillis = endTimeMillis - 3600000 // Ensure start is before end
+                // If same date and end time is before start time, adjust start time
+                if (selectedStartDateMillis == selectedEndDateMillis && endTimeMillis < startTimeMillis) {
+                    startTimeMillis = endTimeMillis - 3600000 // 1 hour earlier
                 }
             }
 
@@ -175,11 +199,11 @@ class AddEventActivity : AppCompatActivity() {
         val timeFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
 
         // Update start date/time
-        txtStartDate.text = dateFormat.format(Date(selectedDateMillis))
+        txtStartDate.text = dateFormat.format(Date(selectedStartDateMillis))
         txtStartTime.text = timeFormat.format(Date(startTimeMillis))
 
         // Update end date/time
-        txtEndDate.text = dateFormat.format(Date(selectedDateMillis))
+        txtEndDate.text = dateFormat.format(Date(selectedEndDateMillis))
         txtEndTime.text = timeFormat.format(Date(endTimeMillis))
     }
 
@@ -212,6 +236,7 @@ class AddEventActivity : AppCompatActivity() {
             val newEvent = buildEvent(name)
 
             oldEvent.title = newEvent.title
+            oldEvent.description = newEvent.description
             oldEvent.dateMillis = newEvent.dateMillis
             oldEvent.timeMillis = newEvent.timeMillis
             oldEvent.endTimeMillis = newEvent.endTimeMillis
@@ -224,13 +249,31 @@ class AddEventActivity : AppCompatActivity() {
     }
 
     private fun buildEvent(name: String): Event {
+        val description = etDescription.text.toString().trim()
+
         return Event(
             id = editEvent?.id ?: System.currentTimeMillis(),
             title = name,
-            dateMillis = selectedDateMillis,
+            description = description,
+            dateMillis = selectedStartDateMillis, // Use start date for the event date
             timeMillis = startTimeMillis,
             isAllDay = switchAllDay.isChecked,
-            endTimeMillis = if (!switchAllDay.isChecked) endTimeMillis else 0L
+            endTimeMillis = if (!switchAllDay.isChecked) {
+                // For multi-day events, we need to handle the end date properly
+                if (selectedStartDateMillis != selectedEndDateMillis) {
+                    // If different dates, use the end date with end time
+                    val endCalendar = Calendar.getInstance().apply {
+                        timeInMillis = selectedEndDateMillis
+                        val timeCalendar = Calendar.getInstance().apply { timeInMillis = endTimeMillis }
+                        set(Calendar.HOUR_OF_DAY, timeCalendar.get(Calendar.HOUR_OF_DAY))
+                        set(Calendar.MINUTE, timeCalendar.get(Calendar.MINUTE))
+                    }
+                    endCalendar.timeInMillis
+                } else {
+                    // Same date, just use end time
+                    endTimeMillis
+                }
+            } else 0L
         )
     }
 }
