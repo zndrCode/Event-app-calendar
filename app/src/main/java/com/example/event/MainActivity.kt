@@ -7,6 +7,7 @@ import android.text.InputType
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class MainActivity : AppCompatActivity() {
 
@@ -69,11 +70,11 @@ class MainActivity : AppCompatActivity() {
         // ---------------------------------------------------
         tvCreate.setOnClickListener {
 
-            val dialog = AlertDialog.Builder(this)
+            val dialog = MaterialAlertDialogBuilder(this)
                 .setTitle("Before You Continue")
                 .setMessage(
-                    "We don't need your real personal information.\n" +
-                            "This is only for a college project, so dummy data is allowed."
+                    "You don't need to enter real information.\n" +
+                            "Dummy data is fine since this is for a college project."
                 )
                 .setCancelable(false)
                 .setPositiveButton("Proceed") { d, _ ->
@@ -86,6 +87,7 @@ class MainActivity : AppCompatActivity() {
                 .create()
 
             dialog.show()
+
         }
     }
 

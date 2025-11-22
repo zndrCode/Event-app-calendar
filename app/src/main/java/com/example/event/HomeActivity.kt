@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -28,6 +29,8 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var navHome: LinearLayout
     private lateinit var navSettings: LinearLayout
     private lateinit var textEmpty: TextView
+    private lateinit var homeContent: LinearLayout
+    private lateinit var fragmentContainer: FrameLayout // Changed to FrameLayout
 
     private lateinit var eventAdapter: EventAdapter
     private val events = mutableListOf<Event>()
@@ -47,12 +50,7 @@ class HomeActivity : AppCompatActivity() {
         setContentView(R.layout.activity_home)
 
         // Initialize views
-        calendarView = findViewById(R.id.calendarView)
-        recyclerView = findViewById(R.id.rvEvents)
-        fabAdd = findViewById(R.id.fabAdd)
-        navHome = findViewById(R.id.navHome)
-        navSettings = findViewById(R.id.navSettings)
-        textEmpty = findViewById(R.id.textEmpty)
+        initViews()
 
         // RecyclerView setup
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -91,13 +89,11 @@ class HomeActivity : AppCompatActivity() {
 
         // Bottom navigation
         navHome.setOnClickListener {
-            Toast.makeText(this, "Already on Home", Toast.LENGTH_SHORT).show()
+            showHomeContent()
         }
 
         navSettings.setOnClickListener {
-            // Navigate to Settings Activity
-            val intent = Intent(this, SettingsActivity::class.java)
-            startActivity(intent)
+            showSettingsFragment()
         }
 
         // Check if we should open add dialog from widget
@@ -106,17 +102,76 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    private fun initViews() {
+        calendarView = findViewById(R.id.calendarView)
+        recyclerView = findViewById(R.id.rvEvents)
+        fabAdd = findViewById(R.id.fabAdd)
+        navHome = findViewById(R.id.navHome)
+        navSettings = findViewById(R.id.navSettings)
+        textEmpty = findViewById(R.id.textEmpty)
+        homeContent = findViewById(R.id.homeContent)
+        fragmentContainer = findViewById(R.id.fragmentContainer) // This is a FrameLayout
+    }
+
+    private fun showHomeContent() {
+        homeContent.visibility = View.VISIBLE
+        fragmentContainer.visibility = View.GONE
+        // Update bottom nav colors
+        updateBottomNavColors(true)
+    }
+
+    private fun showSettingsFragment() {
+        homeContent.visibility = View.GONE
+        fragmentContainer.visibility = View.VISIBLE
+
+        // Replace with SettingsFragment
+        val fragment = SettingsFragment()
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainer, fragment)
+            .commit()
+
+        // Update bottom nav colors
+        updateBottomNavColors(false)
+    }
+
+    private fun updateBottomNavColors(isHomeSelected: Boolean) {
+        val homeIcon = navHome.getChildAt(0) as? android.widget.ImageView
+        val homeText = navHome.getChildAt(1) as? TextView
+        val settingsIcon = navSettings.getChildAt(0) as? android.widget.ImageView
+        val settingsText = navSettings.getChildAt(1) as? TextView
+
+        if (isHomeSelected) {
+            // Home selected
+            homeIcon?.setColorFilter(resources.getColor(android.R.color.holo_blue_dark, null))
+            homeText?.setTextColor(resources.getColor(android.R.color.holo_blue_dark, null))
+            settingsIcon?.setColorFilter(resources.getColor(android.R.color.darker_gray, null))
+            settingsText?.setTextColor(resources.getColor(android.R.color.darker_gray, null))
+        } else {
+            // Settings selected
+            homeIcon?.setColorFilter(resources.getColor(android.R.color.darker_gray, null))
+            homeText?.setTextColor(resources.getColor(android.R.color.darker_gray, null))
+            settingsIcon?.setColorFilter(resources.getColor(android.R.color.holo_blue_dark, null))
+            settingsText?.setTextColor(resources.getColor(android.R.color.holo_blue_dark, null))
+        }
+    }
+
     // --- Exit confirmation when pressing BACK ---
     override fun onBackPressed() {
-        val dialog = AlertDialog.Builder(this)
-            .setTitle("Exit App")
-            .setMessage("Are you sure you want to exit the application?")
-            .setPositiveButton("Yes") { _, _ ->
-                finishAffinity()
-            }
-            .setNegativeButton("No", null)
-            .create()
-        dialog.show()
+        if (fragmentContainer.visibility == View.VISIBLE) {
+            // If settings is showing, go back to home
+            showHomeContent()
+        } else {
+            // Otherwise show exit confirmation
+            val dialog = AlertDialog.Builder(this)
+                .setTitle("Exit App")
+                .setMessage("Are you sure you want to exit the application?")
+                .setPositiveButton("Yes") { _, _ ->
+                    finishAffinity()
+                }
+                .setNegativeButton("No", null)
+                .create()
+            dialog.show()
+        }
     }
 
     // --- Show Add Event Activity ---

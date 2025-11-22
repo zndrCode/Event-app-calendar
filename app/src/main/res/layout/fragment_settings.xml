@@ -17,13 +17,6 @@
             android:padding="12dp"
             android:gravity="center_vertical">
 
-            <ImageButton
-                android:id="@+id/btnBack"
-                android:layout_width="42dp"
-                android:layout_height="42dp"
-                android:background="@android:color/transparent"
-                android:src="@drawable/ic_arrow_back"
-                android:tint="#424242"/>
 
             <TextView
                 android:layout_width="0dp"
@@ -34,11 +27,6 @@
                 android:textStyle="bold"
                 android:textColor="#212121"
                 android:gravity="center"/>
-
-            <!-- Empty view to maintain balance -->
-            <View
-                android:layout_width="42dp"
-                android:layout_height="42dp"/>
         </LinearLayout>
 
         <!-- GENERAL SECTION HEADER -->
