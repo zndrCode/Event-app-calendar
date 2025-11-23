@@ -23,9 +23,10 @@ class AddEventActivity : AppCompatActivity() {
     private lateinit var txtEndTime: TextView
     private lateinit var startDateCard: LinearLayout
     private lateinit var endDateCard: LinearLayout
+    private var spinnerReminder: Spinner? = null
 
-    private var selectedStartDateMillis: Long = 0L // Separate start date
-    private var selectedEndDateMillis: Long = 0L   // Separate end date
+    private var selectedStartDateMillis: Long = 0L
+    private var selectedEndDateMillis: Long = 0L
     private var startTimeMillis: Long = 0L
     private var endTimeMillis: Long = 0L
     private var editEvent: Event? = null
@@ -39,6 +40,7 @@ class AddEventActivity : AppCompatActivity() {
 
         initializeViews(initialDateMillis)
         setupClickListeners()
+        setupReminderSpinner()
     }
 
     private fun initializeViews(initialDateMillis: Long) {
@@ -53,6 +55,7 @@ class AddEventActivity : AppCompatActivity() {
         txtEndTime = findViewById(R.id.txtEndTime)
         startDateCard = findViewById(R.id.startDateCard)
         endDateCard = findViewById(R.id.endDateCard)
+        spinnerReminder = findViewById(R.id.spinnerReminder)
 
         if (editEvent != null) {
             loadEventForEdit()
@@ -61,10 +64,29 @@ class AddEventActivity : AppCompatActivity() {
             selectedStartDateMillis = initialDateMillis
             selectedEndDateMillis = initialDateMillis
             startTimeMillis = now.timeInMillis
-            endTimeMillis = now.timeInMillis + 3600000 // 1 hour later
+            endTimeMillis = now.timeInMillis + 3600000
         }
 
         updateDateTimeDisplays()
+    }
+
+    private fun setupReminderSpinner() {
+        spinnerReminder?.let { spinner ->
+            val reminderOptions = arrayOf("No reminder", "15 minutes before", "30 minutes before", "1 hour before")
+            val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, reminderOptions)
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            spinner.adapter = adapter
+
+            editEvent?.let { event ->
+                val reminderPosition = when (event.reminderMinutes) {
+                    15 -> 1
+                    30 -> 2
+                    60 -> 3
+                    else -> 0
+                }
+                spinner.setSelection(reminderPosition)
+            }
+        }
     }
 
     private fun loadEventForEdit() {
@@ -74,11 +96,10 @@ class AddEventActivity : AppCompatActivity() {
             switchAllDay.isChecked = event.isAllDay
 
             selectedStartDateMillis = event.dateMillis
-            selectedEndDateMillis = event.dateMillis // Initially same as start date
+            selectedEndDateMillis = event.dateMillis
             startTimeMillis = event.timeMillis
             endTimeMillis = if (event.endTimeMillis > 0) event.endTimeMillis else startTimeMillis + 3600000
 
-            // Show/hide time cards based on all-day
             startDateCard.visibility = if (event.isAllDay) View.GONE else View.VISIBLE
             endDateCard.visibility = if (event.isAllDay) View.GONE else View.VISIBLE
         }
@@ -96,32 +117,28 @@ class AddEventActivity : AppCompatActivity() {
 
         switchAllDay.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
-                // Hide time selection for all-day events
                 startDateCard.visibility = View.GONE
                 endDateCard.visibility = View.GONE
             } else {
-                // Show time selection for timed events
                 startDateCard.visibility = View.VISIBLE
                 endDateCard.visibility = View.VISIBLE
             }
         }
 
-        // Start date/time selection
         startDateCard.setOnClickListener {
-            showDatePicker(true) // true for start date
+            showDatePicker(true)
         }
 
         txtStartTime.setOnClickListener {
-            showTimePicker(true) // true for start time
+            showTimePicker(true)
         }
 
-        // End date/time selection
         endDateCard.setOnClickListener {
-            showDatePicker(false) // false for end date
+            showDatePicker(false)
         }
 
         txtEndTime.setOnClickListener {
-            showTimePicker(false) // false for end time
+            showTimePicker(false)
         }
     }
 
@@ -140,13 +157,11 @@ class AddEventActivity : AppCompatActivity() {
 
             if (isStart) {
                 selectedStartDateMillis = selectedCalendar.timeInMillis
-                // If start date is after end date, adjust end date to be same as start
                 if (selectedStartDateMillis > selectedEndDateMillis) {
                     selectedEndDateMillis = selectedStartDateMillis
                 }
             } else {
                 selectedEndDateMillis = selectedCalendar.timeInMillis
-                // If end date is before start date, adjust start date to be same as end
                 if (selectedEndDateMillis < selectedStartDateMillis) {
                     selectedStartDateMillis = selectedEndDateMillis
                 }
@@ -175,15 +190,13 @@ class AddEventActivity : AppCompatActivity() {
 
             if (isStart) {
                 startTimeMillis = selectedCalendar.timeInMillis
-                // If same date and start time is after end time, adjust end time
                 if (selectedStartDateMillis == selectedEndDateMillis && startTimeMillis > endTimeMillis) {
-                    endTimeMillis = startTimeMillis + 3600000 // 1 hour later
+                    endTimeMillis = startTimeMillis + 3600000
                 }
             } else {
                 endTimeMillis = selectedCalendar.timeInMillis
-                // If same date and end time is before start time, adjust start time
                 if (selectedStartDateMillis == selectedEndDateMillis && endTimeMillis < startTimeMillis) {
-                    startTimeMillis = endTimeMillis - 3600000 // 1 hour earlier
+                    startTimeMillis = endTimeMillis - 3600000
                 }
             }
 
@@ -198,11 +211,8 @@ class AddEventActivity : AppCompatActivity() {
         val dateFormat = SimpleDateFormat("EEE, dd MMM yyyy", Locale.getDefault())
         val timeFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
 
-        // Update start date/time
         txtStartDate.text = dateFormat.format(Date(selectedStartDateMillis))
         txtStartTime.text = timeFormat.format(Date(startTimeMillis))
-
-        // Update end date/time
         txtEndDate.text = dateFormat.format(Date(selectedEndDateMillis))
         txtEndTime.text = timeFormat.format(Date(endTimeMillis))
     }
@@ -216,6 +226,9 @@ class AddEventActivity : AppCompatActivity() {
         }
 
         val event = buildEvent(name)
+
+        // Schedule all notifications
+        scheduleAllEventNotifications(event)
 
         setResult(RESULT_OK, Intent().apply {
             putExtra("new_event", event)
@@ -233,6 +246,9 @@ class AddEventActivity : AppCompatActivity() {
         }
 
         editEvent?.let { oldEvent ->
+            // Cancel existing notifications
+            AlarmReceiver.cancelAllEventNotifications(this, oldEvent)
+
             val newEvent = buildEvent(name)
 
             oldEvent.title = newEvent.title
@@ -241,6 +257,10 @@ class AddEventActivity : AppCompatActivity() {
             oldEvent.timeMillis = newEvent.timeMillis
             oldEvent.endTimeMillis = newEvent.endTimeMillis
             oldEvent.isAllDay = newEvent.isAllDay
+            oldEvent.reminderMinutes = newEvent.reminderMinutes
+
+            // Schedule new notifications
+            scheduleAllEventNotifications(newEvent)
         }
 
         setResult(RESULT_OK)
@@ -250,18 +270,22 @@ class AddEventActivity : AppCompatActivity() {
 
     private fun buildEvent(name: String): Event {
         val description = etDescription.text.toString().trim()
+        val selectedReminder = when (spinnerReminder?.selectedItemPosition ?: 0) {
+            1 -> 15
+            2 -> 30
+            3 -> 60
+            else -> 0
+        }
 
         return Event(
             id = editEvent?.id ?: System.currentTimeMillis(),
             title = name,
             description = description,
-            dateMillis = selectedStartDateMillis, // Use start date for the event date
+            dateMillis = selectedStartDateMillis,
             timeMillis = startTimeMillis,
             isAllDay = switchAllDay.isChecked,
             endTimeMillis = if (!switchAllDay.isChecked) {
-                // For multi-day events, we need to handle the end date properly
                 if (selectedStartDateMillis != selectedEndDateMillis) {
-                    // If different dates, use the end date with end time
                     val endCalendar = Calendar.getInstance().apply {
                         timeInMillis = selectedEndDateMillis
                         val timeCalendar = Calendar.getInstance().apply { timeInMillis = endTimeMillis }
@@ -270,10 +294,21 @@ class AddEventActivity : AppCompatActivity() {
                     }
                     endCalendar.timeInMillis
                 } else {
-                    // Same date, just use end time
                     endTimeMillis
                 }
-            } else 0L
+            } else 0L,
+            reminderMinutes = selectedReminder
         )
+    }
+
+    private fun scheduleAllEventNotifications(event: Event) {
+        // Schedule reminder if needed
+        if (event.reminderMinutes > 0) {
+            AlarmReceiver.scheduleEventReminder(this, event, event.reminderMinutes)
+        }
+
+        // Always schedule start and end notifications
+        AlarmReceiver.scheduleEventStartNotification(this, event)
+        AlarmReceiver.scheduleEventEndNotification(this, event)
     }
 }

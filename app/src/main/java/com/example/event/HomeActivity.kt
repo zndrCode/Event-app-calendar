@@ -30,7 +30,7 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var navSettings: LinearLayout
     private lateinit var textEmpty: TextView
     private lateinit var homeContent: LinearLayout
-    private lateinit var fragmentContainer: FrameLayout // Changed to FrameLayout
+    private lateinit var fragmentContainer: FrameLayout
 
     private lateinit var eventAdapter: EventAdapter
     private val events = mutableListOf<Event>()
@@ -110,13 +110,12 @@ class HomeActivity : AppCompatActivity() {
         navSettings = findViewById(R.id.navSettings)
         textEmpty = findViewById(R.id.textEmpty)
         homeContent = findViewById(R.id.homeContent)
-        fragmentContainer = findViewById(R.id.fragmentContainer) // This is a FrameLayout
+        fragmentContainer = findViewById(R.id.fragmentContainer)
     }
 
     private fun showHomeContent() {
         homeContent.visibility = View.VISIBLE
         fragmentContainer.visibility = View.GONE
-        // Update bottom nav colors
         updateBottomNavColors(true)
     }
 
@@ -124,13 +123,11 @@ class HomeActivity : AppCompatActivity() {
         homeContent.visibility = View.GONE
         fragmentContainer.visibility = View.VISIBLE
 
-        // Replace with SettingsFragment
         val fragment = SettingsFragment()
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragmentContainer, fragment)
             .commit()
 
-        // Update bottom nav colors
         updateBottomNavColors(false)
     }
 
@@ -141,13 +138,11 @@ class HomeActivity : AppCompatActivity() {
         val settingsText = navSettings.getChildAt(1) as? TextView
 
         if (isHomeSelected) {
-            // Home selected
             homeIcon?.setColorFilter(resources.getColor(android.R.color.holo_blue_dark, null))
             homeText?.setTextColor(resources.getColor(android.R.color.holo_blue_dark, null))
             settingsIcon?.setColorFilter(resources.getColor(android.R.color.darker_gray, null))
             settingsText?.setTextColor(resources.getColor(android.R.color.darker_gray, null))
         } else {
-            // Settings selected
             homeIcon?.setColorFilter(resources.getColor(android.R.color.darker_gray, null))
             homeText?.setTextColor(resources.getColor(android.R.color.darker_gray, null))
             settingsIcon?.setColorFilter(resources.getColor(android.R.color.holo_blue_dark, null))
@@ -155,13 +150,10 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-    // --- Exit confirmation when pressing BACK ---
     override fun onBackPressed() {
         if (fragmentContainer.visibility == View.VISIBLE) {
-            // If settings is showing, go back to home
             showHomeContent()
         } else {
-            // Otherwise show exit confirmation
             val dialog = AlertDialog.Builder(this)
                 .setTitle("Exit App")
                 .setMessage("Are you sure you want to exit the application?")
@@ -174,14 +166,12 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-    // --- Show Add Event Activity ---
     private fun showAddEventDialog() {
         val intent = Intent(this, AddEventActivity::class.java)
         intent.putExtra("selected_date", selectedDateMillis)
         startActivityForResult(intent, ADD_EVENT_REQUEST_CODE)
     }
 
-    // --- Edit existing event ---
     private fun editEvent(event: Event) {
         val intent = Intent(this, AddEventActivity::class.java)
         intent.putExtra("selected_date", selectedDateMillis)
@@ -189,7 +179,6 @@ class HomeActivity : AppCompatActivity() {
         startActivityForResult(intent, EDIT_EVENT_REQUEST_CODE)
     }
 
-    // --- Handle activity results ---
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -204,7 +193,6 @@ class HomeActivity : AppCompatActivity() {
                     }
                 }
                 EDIT_EVENT_REQUEST_CODE -> {
-                    // Events are updated in-place, just refresh
                     onEventsChanged()
                     Toast.makeText(this, "Event updated successfully", Toast.LENGTH_SHORT).show()
                 }
@@ -212,13 +200,14 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-    // --- Delete Event ---
     private fun deleteEvent(event: Event) {
         AlertDialog.Builder(this)
             .setTitle("Delete Event")
             .setMessage("Are you sure you want to delete this event?")
             .setPositiveButton("Yes") { _, _ ->
                 events.remove(event)
+                // Cancel all scheduled notifications
+                AlarmReceiver.cancelAllEventNotifications(this, event)
                 onEventsChanged()
                 Toast.makeText(this, "Event deleted", Toast.LENGTH_SHORT).show()
             }
@@ -226,7 +215,6 @@ class HomeActivity : AppCompatActivity() {
             .show()
     }
 
-    // --- Filter events for selected date ---
     private fun filterEventsByDate() {
         val sdf = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
         val selectedKey = sdf.format(Date(selectedDateMillis))
@@ -237,7 +225,6 @@ class HomeActivity : AppCompatActivity() {
 
         eventAdapter.updateList(filtered)
 
-        // Show empty state if no events
         if (filtered.isEmpty()) {
             textEmpty.visibility = View.VISIBLE
             recyclerView.visibility = View.GONE
@@ -247,11 +234,9 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-    // --- Highlight dates that have events ---
     private fun highlightDatesWithEvents() {
         val eventDays = mutableListOf<EventDay>()
 
-        // Get unique dates that have events
         val uniqueDates = events.map { event ->
             val cal = Calendar.getInstance().apply {
                 timeInMillis = event.dateMillis
@@ -274,12 +259,10 @@ class HomeActivity : AppCompatActivity() {
         calendarView.setEvents(eventDays)
     }
 
-    // --- Update highlight when events change ---
     private fun updateCalendarHighlights() {
         highlightDatesWithEvents()
     }
 
-    // --- Update widget when events change ---
     private fun updateWidget() {
         try {
             EventWidget::class.java
@@ -289,7 +272,6 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-    // --- Combined method for event changes ---
     private fun onEventsChanged() {
         saveEvents()
         filterEventsByDate()
@@ -297,7 +279,6 @@ class HomeActivity : AppCompatActivity() {
         updateWidget()
     }
 
-    // --- Save events ---
     private fun saveEvents() {
         val sharedPref = getSharedPreferences("EventPrefs", Context.MODE_PRIVATE)
         val editor = sharedPref.edit()
@@ -306,7 +287,6 @@ class HomeActivity : AppCompatActivity() {
         editor.apply()
     }
 
-    // --- Load events ---
     private fun loadEvents() {
         val sharedPref = getSharedPreferences("EventPrefs", Context.MODE_PRIVATE)
         val json = sharedPref.getString("event_list", null)
@@ -315,6 +295,42 @@ class HomeActivity : AppCompatActivity() {
             val savedList: MutableList<Event> = Gson().fromJson(json, type)
             events.clear()
             events.addAll(savedList)
+
+            // Reschedule all reminders when app starts
+            scheduleAllReminders()
+        }
+    }
+
+    // Add these methods to your HomeActivity class
+
+    fun areNotificationsEnabled(): Boolean {
+        val sharedPrefs = getSharedPreferences("AppSettings", MODE_PRIVATE)
+        return sharedPrefs.getBoolean("notifications_enabled", true)
+    }
+
+    fun rescheduleAllNotifications() {
+        if (areNotificationsEnabled()) {
+            for (event in events) {
+                if (event.reminderMinutes > 0) {
+                    AlarmReceiver.scheduleEventReminder(this, event, event.reminderMinutes)
+                }
+                AlarmReceiver.scheduleEventStartNotification(this, event)
+                AlarmReceiver.scheduleEventEndNotification(this, event)
+            }
+        }
+    }
+
+    fun cancelAllNotifications() {
+        for (event in events) {
+            AlarmReceiver.cancelAllEventNotifications(this, event)
+        }
+    }
+
+    private fun scheduleAllReminders() {
+        for (event in events) {
+            if (event.reminderMinutes > 0) {
+                AlarmReceiver.scheduleEventReminder(this, event, event.reminderMinutes)
+            }
         }
     }
 

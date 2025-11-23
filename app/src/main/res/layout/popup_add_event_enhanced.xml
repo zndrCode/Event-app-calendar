@@ -149,7 +149,7 @@
             <LinearLayout
                 android:id="@+id/startDateCard"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
+                android:layout_height="65dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
                 android:background="@drawable/input_field_white"
@@ -207,7 +207,7 @@
             <LinearLayout
                 android:id="@+id/endDateCard"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
+                android:layout_height="65dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
                 android:background="@drawable/input_field_white"
@@ -246,6 +246,32 @@
                     android:textColor="#212121"
                     android:paddingStart="10dp"/>
             </LinearLayout>
+        </LinearLayout>
+
+        <!-- REMINDER CARD -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="18dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/card_white_round">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Reminder"
+                android:textSize="14sp"
+                android:textColor="#757575"/>
+
+            <Spinner
+                android:id="@+id/spinnerReminder"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="6dp"
+                android:background="@drawable/input_field_white"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"/>
         </LinearLayout>
 
     </LinearLayout>

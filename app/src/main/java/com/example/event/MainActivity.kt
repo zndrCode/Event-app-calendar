@@ -2,16 +2,23 @@ package com.example.event
 
 import android.app.AlertDialog
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.text.InputType
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 
 class MainActivity : AppCompatActivity() {
 
     private var isPasswordVisible = false
+
+    companion object {
+        private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 1001
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -20,6 +27,9 @@ class MainActivity : AppCompatActivity() {
         applySavedTheme()
 
         setContentView(R.layout.activity_login)
+
+        // Request notification permission for Android 13+
+        requestNotificationPermission()
 
         val etUsername = findViewById<EditText>(R.id.editTextUsername)
         val etPassword = findViewById<EditText>(R.id.editTextPassword)
@@ -88,7 +98,84 @@ class MainActivity : AppCompatActivity() {
 
             dialog.show()
         }
+    }
 
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    android.Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                // Only request if we haven't already asked or if user hasn't denied permanently
+                if (shouldShowRequestPermissionRationale(android.Manifest.permission.POST_NOTIFICATIONS)) {
+                    // Show explanation why we need this permission
+                    showNotificationPermissionExplanation()
+                } else {
+                    // Request the permission directly
+                    ActivityCompat.requestPermissions(
+                        this,
+                        arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                        NOTIFICATION_PERMISSION_REQUEST_CODE
+                    )
+                }
+            }
+        }
+    }
+
+    private fun showNotificationPermissionExplanation() {
+        AlertDialog.Builder(this)
+            .setTitle("Notification Permission Needed")
+            .setMessage("This app needs notification permission to remind you about your events. You'll receive alerts before your events start.")
+            .setPositiveButton("Allow") { _, _ ->
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                    NOTIFICATION_PERMISSION_REQUEST_CODE
+                )
+            }
+            .setNegativeButton("Later") { dialog, _ ->
+                dialog.dismiss()
+                // Continue without notification permission
+                Toast.makeText(this, "You can enable notifications later in Settings", Toast.LENGTH_LONG).show()
+            }
+            .setCancelable(false)
+            .show()
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            NOTIFICATION_PERMISSION_REQUEST_CODE -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Permission granted
+                    Toast.makeText(this, "Notification permission granted", Toast.LENGTH_SHORT).show()
+                } else {
+                    // Permission denied
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        if (!shouldShowRequestPermissionRationale(android.Manifest.permission.POST_NOTIFICATIONS)) {
+                            // User selected "Don't ask again" - show message about manual enabling
+                            Toast.makeText(
+                                this,
+                                "To enable notifications later, go to Settings > Apps > Eventra > Notifications",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        } else {
+                            // User simply denied
+                            Toast.makeText(
+                                this,
+                                "Notifications disabled. You can enable them in app settings.",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private fun applySavedTheme() {

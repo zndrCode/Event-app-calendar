@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import android.widget.Switch
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
@@ -22,11 +23,13 @@ class SettingsFragment : Fragment() {
     private var txtCurrentTheme: TextView? = null
     private var languageCard: LinearLayout? = null
     private var themeCard: LinearLayout? = null
+    private var switchNotifications: Switch? = null
 
     companion object {
         private const val PREFS_NAME = "AppSettings"
         private const val KEY_LANGUAGE = "app_language"
         private const val KEY_THEME = "app_theme"
+        private const val KEY_NOTIFICATIONS = "notifications_enabled"
     }
 
     override fun onCreateView(
@@ -34,24 +37,18 @@ class SettingsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_settings, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialize views
         if (!initViews(view)) {
-            // If views couldn't be initialized, go back to home
             showHomeContent()
             return
         }
 
-        // Set up click listeners
         setupClickListeners()
-
-        // Load current settings
         loadCurrentSettings()
     }
 
@@ -62,17 +59,21 @@ class SettingsFragment : Fragment() {
             txtCurrentTheme = view.findViewById(R.id.txtCurrentTheme)
             languageCard = view.findViewById(R.id.languageCard)
             themeCard = view.findViewById(R.id.themeCard)
+            switchNotifications = view.findViewById(R.id.switchNotifications)
 
-            // Check if all views were found
             logoutCard != null && txtCurrentLanguage != null &&
-                    txtCurrentTheme != null && languageCard != null && themeCard != null
+                    txtCurrentTheme != null && languageCard != null &&
+                    themeCard != null && switchNotifications != null
         } catch (e: Exception) {
             false
         }
     }
 
     private fun setupClickListeners() {
-        // No back button anymore - users will use bottom navigation to go back to home
+        // Notifications toggle
+        switchNotifications?.setOnCheckedChangeListener { _, isChecked ->
+            setNotificationsEnabled(isChecked)
+        }
 
         // Language selection
         languageCard?.setOnClickListener {
@@ -91,10 +92,14 @@ class SettingsFragment : Fragment() {
     }
 
     private fun loadCurrentSettings() {
-        // Load current theme
         val sharedPrefs = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val savedTheme = sharedPrefs.getInt(KEY_THEME, AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
 
+        // Load notifications setting
+        val notificationsEnabled = sharedPrefs.getBoolean(KEY_NOTIFICATIONS, true)
+        switchNotifications?.isChecked = notificationsEnabled
+
+        // Load current theme
+        val savedTheme = sharedPrefs.getInt(KEY_THEME, AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
         val currentTheme = when (savedTheme) {
             AppCompatDelegate.MODE_NIGHT_YES -> "Dark"
             AppCompatDelegate.MODE_NIGHT_NO -> "Light"
@@ -113,6 +118,39 @@ class SettingsFragment : Fragment() {
             else -> "English"
         }
         txtCurrentLanguage?.text = currentLanguage
+    }
+
+    private fun setNotificationsEnabled(enabled: Boolean) {
+        val sharedPrefs = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        sharedPrefs.edit().putBoolean(KEY_NOTIFICATIONS, enabled).apply()
+
+        if (enabled) {
+            // Reschedule all notifications when enabled
+            rescheduleAllNotifications()
+            android.widget.Toast.makeText(requireContext(), "Notifications enabled", android.widget.Toast.LENGTH_SHORT).show()
+        } else {
+            // Cancel all notifications when disabled
+            cancelAllNotifications()
+            android.widget.Toast.makeText(requireContext(), "Notifications disabled", android.widget.Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun rescheduleAllNotifications() {
+        try {
+            val homeActivity = requireActivity() as? HomeActivity
+            homeActivity?.rescheduleAllNotifications()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun cancelAllNotifications() {
+        try {
+            val homeActivity = requireActivity() as? HomeActivity
+            homeActivity?.cancelAllNotifications()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private fun showLanguageSelectionDialog() {
@@ -148,14 +186,11 @@ class SettingsFragment : Fragment() {
     }
 
     private fun setAppLanguage(languageCode: String, languageName: String) {
-        // Save language preference
         val sharedPrefs = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         sharedPrefs.edit().putString(KEY_LANGUAGE, languageCode).apply()
 
-        // Update UI
         txtCurrentLanguage?.text = languageName
 
-        // Show restart message
         androidx.appcompat.app.AlertDialog.Builder(requireContext())
             .setTitle("Language Changed")
             .setMessage("Please restart the app to apply the language changes.")
@@ -167,31 +202,25 @@ class SettingsFragment : Fragment() {
     }
 
     private fun setAppTheme(themeMode: Int) {
-        // Save theme preference
         val sharedPrefs = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         sharedPrefs.edit().putInt(KEY_THEME, themeMode).apply()
 
-        // Apply theme
         AppCompatDelegate.setDefaultNightMode(themeMode)
 
-        // Update current theme text
         txtCurrentTheme?.text = when (themeMode) {
             AppCompatDelegate.MODE_NIGHT_YES -> "Dark"
             AppCompatDelegate.MODE_NIGHT_NO -> "Light"
             else -> "System Default"
         }
 
-        // Restart activity to immediately apply theme
         requireActivity().recreate()
     }
 
     private fun showHomeContent() {
         try {
-            // Hide settings and show home content
             requireActivity().findViewById<LinearLayout>(R.id.homeContent)?.visibility = View.VISIBLE
             requireActivity().findViewById<FrameLayout>(R.id.fragmentContainer)?.visibility = View.GONE
         } catch (e: Exception) {
-            // Fallback: just finish the activity
             requireActivity().finish()
         }
     }
@@ -205,23 +234,21 @@ class SettingsFragment : Fragment() {
     }
 
     private fun performLogout() {
-        // Navigate to LoginActivity (MainActivity)
         val intent = Intent(requireContext(), MainActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
         startActivity(intent)
         requireActivity().finish()
 
-        // Show a toast message
         android.widget.Toast.makeText(requireContext(), "Logged out successfully", android.widget.Toast.LENGTH_SHORT).show()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        // Clean up references to avoid memory leaks
         logoutCard = null
         txtCurrentLanguage = null
         txtCurrentTheme = null
         languageCard = null
         themeCard = null
+        switchNotifications = null
     }
 }
