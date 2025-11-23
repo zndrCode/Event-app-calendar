@@ -70,11 +70,11 @@ class MainActivity : AppCompatActivity() {
         // ---------------------------------------------------
         tvCreate.setOnClickListener {
 
-            val dialog = MaterialAlertDialogBuilder(this)
+            val dialog = AlertDialog.Builder(this)
                 .setTitle("Before You Continue")
                 .setMessage(
-                    "You don't need to enter real information.\n" +
-                            "Dummy data is fine since this is for a college project."
+                    "We don't need your real personal information.\n" +
+                            "This is only for a college project, so dummy data is allowed."
                 )
                 .setCancelable(false)
                 .setPositiveButton("Proceed") { d, _ ->
@@ -87,8 +87,8 @@ class MainActivity : AppCompatActivity() {
                 .create()
 
             dialog.show()
-
         }
+
     }
 
     private fun applySavedTheme() {
