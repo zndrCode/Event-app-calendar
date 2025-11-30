@@ -23,13 +23,13 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Apply saved theme before setting content view
+        // Apply saved theme before UI loads
         applySavedTheme()
 
         setContentView(R.layout.activity_login)
 
-        // Request notification permission for Android 13+
-        requestNotificationPermission()
+        // Ask for notification permission ONCE on first app launch
+        requestNotificationPermissionOnce()
 
         val etUsername = findViewById<EditText>(R.id.editTextUsername)
         val etPassword = findViewById<EditText>(R.id.editTextPassword)
@@ -37,7 +37,7 @@ class MainActivity : AppCompatActivity() {
         val tvCreate = findViewById<TextView>(R.id.textCreate)
         val imgToggle = findViewById<ImageView>(R.id.imageTogglePassword)
 
-        // Toggle Password Visibility
+        // Toggle password visibility
         imgToggle.setOnClickListener {
             isPasswordVisible = !isPasswordVisible
             if (isPasswordVisible) {
@@ -75,9 +75,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // ---------------------------------------------------
-        // SHOW DIALOG WHEN PRESSING "Create an Account"
-        // ---------------------------------------------------
+        // "Create an Account" dialog
         tvCreate.setOnClickListener {
 
             val dialog = AlertDialog.Builder(this)
@@ -100,22 +98,34 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // ------------------------------------------------------------
+    // NOTIFICATION PERMISSION (ONLY ASK ON FIRST APP OPEN)
+    // ------------------------------------------------------------
+    private fun requestNotificationPermissionOnce() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+
+        val prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE)
+        val alreadyAsked = prefs.getBoolean("asked_notification_permission", false)
+
+        if (!alreadyAsked) {
+            prefs.edit().putBoolean("asked_notification_permission", true).apply()
+            requestNotificationPermission()
+        }
+    }
+
     private fun requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(
-                    this,
-                    android.Manifest.permission.POST_NOTIFICATIONS
-                ) != PackageManager.PERMISSION_GRANTED
+            val permission = android.Manifest.permission.POST_NOTIFICATIONS
+
+            if (ContextCompat.checkSelfPermission(this, permission)
+                != PackageManager.PERMISSION_GRANTED
             ) {
-                // Only request if we haven't already asked or if user hasn't denied permanently
-                if (shouldShowRequestPermissionRationale(android.Manifest.permission.POST_NOTIFICATIONS)) {
-                    // Show explanation why we need this permission
+                if (shouldShowRequestPermissionRationale(permission)) {
                     showNotificationPermissionExplanation()
                 } else {
-                    // Request the permission directly
                     ActivityCompat.requestPermissions(
                         this,
-                        arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                        arrayOf(permission),
                         NOTIFICATION_PERMISSION_REQUEST_CODE
                     )
                 }
@@ -126,7 +136,7 @@ class MainActivity : AppCompatActivity() {
     private fun showNotificationPermissionExplanation() {
         AlertDialog.Builder(this)
             .setTitle("Notification Permission Needed")
-            .setMessage("This app needs notification permission to remind you about your events. You'll receive alerts before your events start.")
+            .setMessage("Eventra needs notification permission to remind you about your events. You'll receive alerts before your events start.")
             .setPositiveButton("Allow") { _, _ ->
                 ActivityCompat.requestPermissions(
                     this,
@@ -136,7 +146,6 @@ class MainActivity : AppCompatActivity() {
             }
             .setNegativeButton("Later") { dialog, _ ->
                 dialog.dismiss()
-                // Continue without notification permission
                 Toast.makeText(this, "You can enable notifications later in Settings", Toast.LENGTH_LONG).show()
             }
             .setCancelable(false)
@@ -149,35 +158,36 @@ class MainActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when (requestCode) {
-            NOTIFICATION_PERMISSION_REQUEST_CODE -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // Permission granted
-                    Toast.makeText(this, "Notification permission granted", Toast.LENGTH_SHORT).show()
-                } else {
-                    // Permission denied
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        if (!shouldShowRequestPermissionRationale(android.Manifest.permission.POST_NOTIFICATIONS)) {
-                            // User selected "Don't ask again" - show message about manual enabling
-                            Toast.makeText(
-                                this,
-                                "To enable notifications later, go to Settings > Apps > Eventra > Notifications",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        } else {
-                            // User simply denied
-                            Toast.makeText(
-                                this,
-                                "Notifications disabled. You can enable them in app settings.",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
+
+        if (requestCode == NOTIFICATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.isNotEmpty() &&
+                grantResults[0] == PackageManager.PERMISSION_GRANTED
+            ) {
+                Toast.makeText(this, "Notification permission granted", Toast.LENGTH_SHORT).show()
+            } else {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+
+                    if (!shouldShowRequestPermissionRationale(android.Manifest.permission.POST_NOTIFICATIONS)) {
+                        Toast.makeText(
+                            this,
+                            "To enable notifications later, go to Settings > Apps > Eventra > Notifications",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    } else {
+                        Toast.makeText(
+                            this,
+                            "Notifications disabled. You can enable them in Settings.",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
             }
         }
     }
 
+    // ------------------------------------------------------------
+    // APPLY SAVED THEME
+    // ------------------------------------------------------------
     private fun applySavedTheme() {
         val sharedPrefs = getSharedPreferences("AppSettings", MODE_PRIVATE)
         val savedTheme = sharedPrefs.getInt("app_theme", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
